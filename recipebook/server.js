@@ -240,3 +240,5 @@ app.post("/add/recipe/:username", async (req, res) => {
 app.listen(port, () =>
   console.log(`App listening at http://localhost:${port}`)
 );
+
+module.exports = { User, Recipe }; // Used only for seeding DB
