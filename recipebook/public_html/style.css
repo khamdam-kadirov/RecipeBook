@@ -10,7 +10,7 @@ body {
 
 /* Header Styles */
 #header {
-  background-color: #333;
+  background-color: #ab0520;
   color: #fff;
   text-align: center;
   padding: 1rem 0;
@@ -20,12 +20,12 @@ body {
 
 /* Form Section Styles */
 .headers {
-  background-color: #333;
+  background-color: #0c234b;
   color: #fff;
   padding: 0.5rem;
   text-align: center;
   margin: 0px;
-  border-top: 1px solid #ddd;
+  /* border-top: 0.5px solid #ddd; */
 }
 
 /* Form Styles */
@@ -46,15 +46,16 @@ form {
 
 .Inputs {
   width: 100%;
-  padding: 10px 0px;
+  padding: 10px 0px 10px 5px;
   margin-bottom: 20px;
   border: 1px solid #adadad;
   border-radius: 4px;
+  font-size: 16px;
 }
 
 /* Button Styles */
 input[type="submit"] {
-  background-color: #5cb85c;
+  background-color: #0c234b;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -63,7 +64,7 @@ input[type="submit"] {
 }
 
 input[type="submit"]:hover {
-  background-color: #4cae4c;
+  background-color: #ab0520;
 }
 
 /* Failure Message Styles */
