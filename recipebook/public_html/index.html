@@ -1,0 +1,49 @@
+<!-- 
+ * Author: Igor Gabriel Bezerra Bernardon, John Ko, Khamdam Kadirov, Sherali Ozodov
+ * Date: 11/30/2023
+ * Class: CSC 337
+ * Instructor: Benjamin Dicken
+ *
+ * Description: 
+ -->
+ <!DOCTYPE html>
+ <html lang="en">
+ 
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Recipe Book</title>
+     <link rel="stylesheet" type="text/css" href="style.css">
+ </head>
+ 
+ <body>
+    <h1 id="header">RecipeBook</h1>
+    <!-- Form to log in a user -->
+    <h2 class="headers">Login</h2>
+    <form id="userForm">
+        <label for="usernameLogin" class="Labels">Username:</label>
+        <input type="text" id="usernameLogin" class="Inputs" required>
+        <br>
+        <label for="passwordLogin" class="Labels">Password:</label>
+        <input type="password" id="passwordLogin" class="Inputs" required>
+        <br>
+        <input type="submit" value="Login" class="Labels">
+        <span id="loginFail"></span>
+    </form>
+
+    <!-- Form to create an account for a user -->
+    <h2 class="headers">Create Account</h2>
+    <form id="createForm">
+        <label for="usernameCreate" class="Labels">Username:</label>
+        <input type="text" id="usernameCreate" class="Inputs" required>
+        <br>
+        <label for="passwordCreate" class="Labels">Password:</label>
+        <input type="password" id="passwordCreate" class="Inputs" required>
+        <br>
+        <input type="submit" value="Create an Account" class="Labels">
+    </form>
+
+    <script src="script.js"></script>
+ </body>
+ 
+ </html>
