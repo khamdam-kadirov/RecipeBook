@@ -1,0 +1,78 @@
+<!-- 
+ * Author: Igor Gabriel Bezerra Bernardon, John Ko, Khamdam Kadirov, Sherali Ozodov
+ * Date: 11/30/2023
+ * Class: CSC 337
+ * Instructor: Benjamin Dicken
+ *
+ * Description: 
+ -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Post</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+  </head>
+
+  <body>
+    <h1 id="header">Create a Post</h1>
+    <!-- Form to log in a user -->
+    <h2 class="headers">New Recipe</h2>
+    <form id="newRecipeForm">
+      <input
+        type="text"
+        id="imageUpload"
+        placeholder="Upload Image"
+        class="Inputs"
+        required
+      />
+      <br />
+      <input
+        type="text"
+        id="titleInput"
+        placeholder="Recipe Title"
+        class="Inputs"
+        required
+      />
+      <br />
+      <select id="categoryInput" class="Inputs" required>
+        <option value="" disabled selected style="display: none">
+          Select Category
+        </option>
+        <option value="Italian">Italian</option>
+        <option value="Chinese">Chinese</option>
+        <option value="French">French</option>
+        <option value="Vegan">Vegan</option>
+        <option value="Dessert">Dessert</option>
+      </select>
+      <br />
+      <input
+        type="text"
+        id="timeInput"
+        placeholder="Time to Prepare (e.g., 30 mins)"
+        class="Inputs"
+      />
+      <br />
+      <input
+        type="number"
+        id="caloriesInput"
+        placeholder="Approximate Calories"
+        class="Inputs"
+      />
+      <br />
+      <input
+        type="text"
+        id="difficultyInput"
+        placeholder="Difficulty Level (e.g., Easy, Hard)"
+        class="Inputs"
+      />
+      <br />
+      <input type="submit" value="Submit Recipe" class="Labels" />
+      <span id="submissionStatus"></span>
+    </form>
+
+    <script src="script.js"></script>
+  </body>
+</html>
