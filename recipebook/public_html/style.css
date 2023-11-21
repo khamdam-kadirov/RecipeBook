@@ -1,3 +1,12 @@
+/* 
+ * Author: Igor Gabriel Bezerra Bernardon, John Ko, Khamdam Kadirov, Sherali Ozodov
+ * Date: 11/30/2023
+ * Class: CSC 337
+ * Instructor: Benjamin Dicken
+ *
+ * Description: 
+*/
+
 /* Global Styles */
 body {
   font-family: Arial, sans-serif;
@@ -38,6 +47,10 @@ form {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+#newRecipeForm {
+  margin-top: 30px;
+}
+
 .Labels {
   display: block;
   margin-bottom: 10px;
@@ -51,6 +64,14 @@ form {
   border: 1px solid #adadad;
   border-radius: 4px;
   font-size: 16px;
+}
+
+option {
+  color: black;
+}
+
+#categoryInput:required:invalid {
+  color: grey;
 }
 
 /* Button Styles */
