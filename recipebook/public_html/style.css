@@ -48,6 +48,7 @@ form {
 }
 
 #newRecipeForm {
+  max-width: 600px;
   margin-top: 30px;
 }
 
@@ -82,6 +83,15 @@ input[type="submit"] {
   padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
+}
+
+::placeholder {
+  font-family: Arial, sans-serif;
+}
+
+textarea {
+  resize: none;
+  font-family: Arial, sans-serif;
 }
 
 input[type="submit"]:hover {
