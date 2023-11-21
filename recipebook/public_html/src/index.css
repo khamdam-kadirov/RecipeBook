@@ -6,6 +6,7 @@ body {
   background: url('landing2.png') no-repeat center center/cover;
   position: relative;
   color: white;
+  height: 900px;
 }
 
 /* Header container */
