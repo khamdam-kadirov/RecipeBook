@@ -114,10 +114,10 @@ function authenticate(req, res, next) {
       next();
     } else {
       res.clearCookie("login");
-      res.redirect("/index.html");
+      res.redirect("/signin.html");
     }
   } else {
-    res.redirect("/index.html");
+    res.redirect("/signin.html");
   }
 }
 
