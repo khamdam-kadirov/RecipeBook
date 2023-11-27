@@ -11,7 +11,7 @@ body, html {
     background: rgb(225, 214, 200);
 }
 
-.signup-container {
+.signin-container {
     display: flex;
     width: 80%;
     max-width: 1000px;
@@ -24,7 +24,7 @@ body, html {
 
 .graphics-section {
     flex: 1;
-    background: url('signup.jpg') no-repeat center center;
+    background: url('signin.jpg') no-repeat center center;
     background-size: cover;
 }
 
@@ -55,7 +55,7 @@ body, html {
     padding-bottom: 75px;
 }
 
-.signup-form {
+#userForm {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -69,7 +69,7 @@ body, html {
     font-weight: bold;
 }
 
-.signup-input {
+.signin-input {
     width: 100%;
     padding: 15px;
     margin-bottom: 1rem;
@@ -78,7 +78,7 @@ body, html {
 }
 
 
-.signup-btn {
+.signin-btn {
     padding: 15px 30px;
     border: none;
     border-radius: 9px;
@@ -94,20 +94,20 @@ body, html {
     margin-top: 10px;
 }
 
-.signup-btn:hover, .signin-btn:focus {
+.signin-btn:hover, .signin-btn:focus {
     background-color: rgb(15, 173, 235);
 }
 
-.signin-link {
+.signup-link {
     color: #fff;
     font-size: 0.9rem;
 }
 
-.signin-link a {
+.signup-link a {
     color: #aad1ff;
     text-decoration: none;
 }
 
-.signin-link a:hover {
+.signup-link a:hover {
     text-decoration: underline;
 }
