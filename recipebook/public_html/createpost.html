@@ -12,83 +12,80 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create Post</title>
+    <title>Post a Recipe</title>
     <link rel="stylesheet" type="text/css" href="style.css" />
   </head>
-
   <body>
-    <h1 id="header">Create a Post</h1>
-    <!-- Form to log in a user -->
-    <h2 class="headers">New Recipe</h2>
-    <form id="newRecipeForm">
-      <input
-        type="text"
-        id="imageUpload"
-        placeholder="Upload Image"
-        class="Inputs"
-        required
-      />
-      <br />
-      <input
-        type="text"
-        id="titleInput"
-        placeholder="Recipe Title"
-        class="Inputs"
-        required
-      />
-      <br />
-      <input
-        type="text"
-        id="contentInput"
-        placeholder="Ingredients"
-        class="Inputs"
-        required
-      />
-      <br />
-      <select id="categoryInput" class="Inputs" required>
-        <option value="" disabled selected style="display: none">
-          Select Category
-        </option>
-        <option value="Italian">Italian</option>
-        <option value="Chinese">Chinese</option>
-        <option value="French">French</option>
-        <option value="Vegan">Vegan</option>
-        <option value="Dessert">Dessert</option>
-      </select>
-      <br />
-      <input
-        type="text"
-        id="timeInput"
-        placeholder="Time to Prepare (e.g., 30 mins)"
-        class="Inputs"
-      />
-      <br />
-      <input
-        type="number"
-        id="caloriesInput"
-        placeholder="Approximate Calories"
-        class="Inputs"
-      />
-      <br />
-      <input
-        type="text"
-        id="difficultyInput"
-        placeholder="Difficulty Level (e.g., Easy, Hard)"
-        class="Inputs"
-      />
-      <br />
-      <textarea
-        id="instructionsInput"
-        placeholder="Recipe Instructions"
-        class="Inputs"
-        rows="6"
-        required
-      ></textarea>
-      <br />
-      <input type="submit" value="Submit Recipe" class="Labels" />
-      <span id="submissionStatus"></span>
-    </form>
-
+    <div class="post-container">
+      <div class="graphics-section"></div>
+      <div class="form-section">
+        <div class="form-header">
+          <h1>Post Recipe</h1>
+        </div>
+        <div class="form-inner">
+          <form id="userForm">
+            <input
+              type="text"
+              id="image"
+              placeholder="Upload Image"
+              class="post-input"
+              required
+            />
+            <input
+              type="text"
+              id="title"
+              placeholder="Recipe Title"
+              class="post-input"
+              required
+            />
+            <input
+              type="text"
+              id="content"
+              placeholder="Ingredients"
+              class="post-input"
+              required
+            />
+            <select id="category" class="post-input" required>
+              <option value="" disabled selected style="display: none">
+                Select Category
+              </option>
+              <option value="Italian">Italian</option>
+              <option value="Chinese">Chinese</option>
+              <option value="French">French</option>
+              <option value="Vegan">Vegan</option>
+              <option value="Dessert">Dessert</option>
+            </select>
+            <input
+              type="text"
+              id="time"
+              placeholder="Time to Prepare (e.g., 30 mins)"
+              class="post-input"
+            />
+            <input
+              type="number"
+              id="calories"
+              placeholder="Approximate Calories"
+              class="post-input"
+            />
+            <input
+              type="text"
+              id="difficulty"
+              placeholder="Difficulty Level (e.g., Easy, Hard)"
+              class="post-input"
+            />
+            <textarea
+              id="instructions"
+              placeholder="Recipe Instructions"
+              class="post-input"
+              rows="6"
+              required
+            ></textarea>
+            <button type="submit" class="post-btn">Submit Recipe</button>
+            <span id="submissionStatus"></span>
+          </form>
+        </div>
+      </div>
+    </div>
     <script src="script.js"></script>
   </body>
 </html>
