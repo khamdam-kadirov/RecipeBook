@@ -43,6 +43,14 @@ const RecipeSchema = new Schema({
     type: String,
     required: false,
   },
+  comments: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment'
+  }],
+  likes: {
+    type: Number,
+    default: 0
+  }
 });
 
 const Recipe = mongoose.model("Recipe", RecipeSchema);
@@ -63,6 +71,28 @@ var UserSchema = new Schema({
 
 var User = mongoose.model("User", UserSchema);
 
+// Define the Comment Schema
+var CommentSchema = new Schema({
+  recipe: {
+    type: Schema.Types.ObjectId,
+    ref: 'Recipe',
+    required: true
+  },
+  username: {
+    type: String,
+    required: true
+  },
+  text: {
+    type: String,
+    required: true
+  },
+  date: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+var Comment = mongoose.model('Comment', CommentSchema);
 
 // Middleware for parsing cookies and request bodies
 app.use(cookieParser());
@@ -308,6 +338,41 @@ app.post('/logout', (req, res) => {
       res.status(400).json({ success: false, message: 'Not logged in.' });
   }
 });
+
+// API endpoint to add a comment
+app.post('/recipe/comment/:recipeId', (req, res) => {
+  const { username, text } = req.body;
+  const newComment = new Comment({
+    recipe: req.params.recipeId,
+    username: username,
+    text: text
+  });
+
+  newComment.save()
+    .then(comment => {
+      return Recipe.findById(req.params.recipeId);
+    })
+    .then(recipe => {
+      if (!recipe) return res.status(404).json({ message: 'Recipe not found.' });
+      recipe.comments.push(comment._id);
+      return recipe.save();
+    })
+    .then(() => res.json({ message: 'Comment added successfully.' }))
+    .catch(err => res.status(500).json({ message: 'Error adding comment.' }));
+});
+
+// API endpoint for liking a recipe
+app.post('/recipe/like/:recipeId', (req, res) => {
+  Recipe.findById(req.params.recipeId)
+    .then(recipe => {
+      if (!recipe) return res.status(404).json({ message: 'Recipe not found.' });
+      recipe.likes += 1;
+      return recipe.save();
+    })
+    .then(() => res.json({ message: 'Recipe liked successfully.' }))
+    .catch(err => res.status(500).json({ message: 'Error liking recipe.' }));
+});
+
 
 
 app.listen(port, () =>
