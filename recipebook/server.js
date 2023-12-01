@@ -9,9 +9,11 @@
 
 const mongoose = require("mongoose");
 const express = require("express");
-const bp = require("body-parser");
+const path = require('path');
+const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const bcrypt = require('bcrypt');
+const multer = require('multer');
 const app = express();
 const port = 80;
 const saltRounds = 10;
@@ -70,6 +72,10 @@ var UserSchema = new Schema({
     type: String,
     required: true,
   },
+  firstName: String,
+  lastName: String,
+  bio: String,
+  profileImage: String,
   recipes: [ {type: Schema.Types.ObjectId, ref: "Recipe" } ],
 });
 
@@ -98,10 +104,24 @@ var CommentSchema = new Schema({
 
 var Comment = mongoose.model('Comment', CommentSchema);
 
-// Middleware for parsing cookies and request bodies
+
 app.use(cookieParser());
-app.use(bp.json());
-app.use(bp.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+      cb(null, 'public_html/uploads');
+  },
+  filename: function (req, file, cb) {
+      cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
+
+// Serve static files from the uploads directory
+app.use('/uploads', express.static('public_html/uploads'));
 
 // Object to hold active sessions with session ID as key
 let sessions = {};
@@ -213,7 +233,7 @@ app.post('/login', (req, res) => {
 
 // POST route for handling the creation of a new account
 app.post('/create-account', (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, firstName, lastName } = req.body;
 
   // Check if the password meets the minimum length requirement
   if (password.length < 7) {
@@ -232,7 +252,13 @@ app.post('/create-account', (req, res) => {
           return res.status(500).json({ success: false, message: 'Error hashing password.' });
         }
 
-        const newUser = new User({ username, password: hash });
+        const newUser = new User({ 
+          username, 
+          password: hash, 
+          firstName, 
+          lastName 
+      });
+
         newUser.save()
           .then(() => {
             res.status(201).json({ success: true, message: 'Account created successfully.' });
@@ -343,6 +369,70 @@ app.post('/logout', (req, res) => {
   }
 });
 
+// Endpoint for updating user profile
+app.put('/update-profile', authenticate, upload.single('profileImage'), (req, res) => {
+  const { username } = req.session;
+  let updateData = { ...req.body };
+
+  if (req.file) {
+      const profileImagePath = '/uploads/' + req.file.filename;
+      updateData.profileImage = profileImagePath;
+  }
+
+  User.findOneAndUpdate({ username }, updateData, { new: true })
+      .then(updatedUser => {
+          if (!updatedUser) {
+              return res.status(404).json({ success: false, message: 'User not found.' });
+          }
+          res.json({ success: true, message: 'Profile updated successfully.', updatedUser });
+      })
+      .catch(err => {
+          res.status(500).json({ success: false, message: 'Error updating profile.' });
+      });
+});
+
+// Endpoint to get user profile information
+app.get('/get-user-profile', authenticate, (req, res) => {
+  // Assuming 'req.session.username' contains the username of the logged-in user
+  User.findOne({ username: req.session.username }, 'firstName lastName bio profileImage')
+    .then(user => {
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        res.json({
+          firstName: user.firstName,
+          lastName: user.lastName,
+          bio: user.bio,
+          profileImage: user.profileImage,
+        });
+    })
+    .catch(err => {
+        res.status(500).json({ message: 'Error fetching user profile.' });
+    });
+});
+
+app.post('/upload-profile-image', authenticate, upload.single('profileImage'), (req, res) => {
+  const { username } = req.session;
+
+  // Check if file upload was successful
+  if (!req.file) {
+      return res.status(400).json({ message: 'No image file provided.' });
+  }
+
+  const profileImagePath = '/uploads/' + req.file.filename;
+  User.findOneAndUpdate({ username: username }, { profileImage: profileImagePath }, { new: true })
+      .then(user => {
+          if (!user) {
+              return res.status(404).json({ message: 'User not found.' });
+          }
+          res.json({ message: 'Image uploaded successfully.', profileImage: profileImagePath });
+      })
+      .catch(err => {
+          res.status(500).json({ message: 'Error uploading image.' });
+      });
+});
+
+
 // API endpoint to add a comment
 app.post('/recipe/comment/:recipeId', (req, res) => {
   const { username, text } = req.body;
@@ -401,9 +491,7 @@ app.get('/recipes/category/:category', (req, res) => {
     .catch(err => res.status(500).json({ message: 'Error fetching recipes.' }));
 });
 
-app.listen(port, () =>
-  console.log(`App listening at http://localhost:${port}`)
-);
+app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
 
 // Used only for seeding DB
 module.exports = { User, Recipe };

@@ -63,11 +63,14 @@ document.addEventListener('DOMContentLoaded', function() {
           event.preventDefault();
           const username = document.getElementById('usernameCreate').value;
           const password = document.getElementById('passwordCreate').value;
+          const firstName = document.getElementById('firstNameCreate').value;
+          const lastName = document.getElementById('lastNameCreate').value;
+          const createAccountForm = document.getElementById('createForm');
 
           fetch('/create-account', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username, password })
+              body: JSON.stringify({ username, password, firstName, lastName })
           })
           .then(response => response.json())
           .then(data => {
@@ -106,3 +109,78 @@ if (logoutButton) {
         });
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/update-profile', {
+                method: 'PUT',
+                credentials: 'include',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Check if the update was successful
+                if (data.success) {
+                    alert('Profile updated successfully.');
+                    window.location.href = '/myprofile.html';
+                } else {
+                    // Handle cases where 'success' is false
+                    alert('Failed to update profile: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating your profile.');
+            });
+        });
+    }
+
+    const imageUpload = document.getElementById('imageUpload');
+    if (imageUpload) {
+        imageUpload.addEventListener('change', function(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('profileImage').src = event.target.result;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/get-user-profile', {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        const profileImage = document.getElementById('profileImage');
+        const userName = document.getElementById('userName');
+        const userBio = document.getElementById('userBio');
+        if (data.profileImage) {
+            // Assuming 'profileImage' contains the filename of the image
+            profileImage.src = data.profileImage;
+        } else {
+            // Set to default image if no profile picture is available
+            profileImage.src = '/av.png';
+        }
+        if (userName) {
+            userName.textContent = `${data.firstName} ${data.lastName}`;
+        }
+        if (userBio) {
+            userBio.textContent = data.bio;
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching user data:', error);
+    });
+});
