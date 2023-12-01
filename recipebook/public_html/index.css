@@ -43,6 +43,10 @@ body {
   font-weight: bold;
 }
 
+.navigation a:hover {
+  color: #e74c3c; 
+}
+
 /* Button styles */
 .button-free-trial, .button-explore {
   background-color: white;
