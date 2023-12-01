@@ -6,14 +6,17 @@
  *
  * Description:
  */
+
 const mongoose = require("mongoose");
 const express = require("express");
 const bp = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require('bcrypt');
 const app = express();
 const port = 80;
+const saltRounds = 10;
 
-// DB stuff
+// DB setup
 const db = mongoose.connection;
 const mongoDBURL = "mongodb://127.0.0.1/recipes";
 mongoose.connect(mongoDBURL, { useNewUrlParser: true });
@@ -40,6 +43,18 @@ const RecipeSchema = new Schema({
     type: String,
     required: false,
   },
+  comments: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment'
+  }],
+  likes: {
+    type: Number,
+    default: 0
+  },
+  likedBy: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }]
 });
 
 const Recipe = mongoose.model("Recipe", RecipeSchema);
@@ -55,190 +70,340 @@ var UserSchema = new Schema({
     type: String,
     required: true,
   },
-  recipes: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Recipe",
-    },
-  ],
+  recipes: [ {type: Schema.Types.ObjectId, ref: "Recipe" } ],
 });
 
 var User = mongoose.model("User", UserSchema);
 
-// Session will be added when a user successfully logged in.
+// Define the Comment Schema
+var CommentSchema = new Schema({
+  recipe: {
+    type: Schema.Types.ObjectId,
+    ref: 'Recipe',
+    required: true
+  },
+  username: {
+    type: String,
+    required: true
+  },
+  text: {
+    type: String,
+    required: true
+  },
+  date: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+var Comment = mongoose.model('Comment', CommentSchema);
+
+// Middleware for parsing cookies and request bodies
+app.use(cookieParser());
+app.use(bp.json());
+app.use(bp.urlencoded({ extended: true }));
+
+// Object to hold active sessions with session ID as key
 let sessions = {};
 
-function addSession(username) {
+// Creates a new user session.
+function addSession(usernameString) {
   let sid = Math.floor(Math.random() * 1000000000);
+  // Record current time to track session creation time
   let now = Date.now();
-  sessions[username] = { id: sid, time: now };
+  // Create session object and add it to the sessions object
+  sessions[sid] = {
+    username: usernameString,
+    id: sid,
+    time: now
+  };
   return sid;
 }
 
+// Removes expired sessions. Session expiration is set to 10 minutes.
 function removeSessions() {
   let now = Date.now();
-  let usernames = Object.keys(sessions);
-  for (let i = 0; i < usernames.length; i++) {
-    let last = sessions[usernames[i]].time;
-    if (last + 600000 < now) {
-      delete sessions[usernames[i]];
+
+  // Iterate over all the sessions
+  for (let sid in sessions) {
+    if (sessions.hasOwnProperty(sid)) {
+      let session = sessions[sid];
+      // Check if the session has expired
+      if (session.time + 600000 < now) {
+        // If the session has expired, delete it from the sessions object
+        delete sessions[sid];
+      }
     }
   }
-  console.log(sessions);
 }
 
 setInterval(removeSessions, 2000);
 
-app.use(cookieParser());
-
+// This function authenticates the user by checking the session cookie.
 function authenticate(req, res, next) {
-  /**
-   * Description: This function is responsible for authenticating
-   * a user based on its cookie information
-   *
-   * Parameters:
-   * req = Request
-   * res = Response
-   * next = Next middleware function
-   *
-   * Return: None
-   */
-  let c = req.cookies;
-  console.log("auth request:");
-  console.log(req.cookies);
-  if (c != undefined && c.login != undefined) {
-    if (
-      sessions[c.login.username] != undefined &&
-      sessions[c.login.username].id == c.login.sessionID
-    ) {
+  // Retrieve the session ID from the cookie
+  let sessionCookie = req.cookies['session_id'];
+
+  if (sessionCookie) {
+    // Look up the session by the session ID
+    let sessionKey = Object.keys(sessions).find(key => sessions[key].id == sessionCookie);
+    let session = sessions[sessionKey];
+
+    // Check if session exists and hasn't expired
+    if (session && (Date.now() - session.time) < 600000) {
+      // Create a session on the request object if it's not already there
+      if (!req.session) req.session = {};
+      req.session.username = session.username;
       next();
     } else {
-      res.clearCookie("login");
-      res.redirect("/index.html");
+      // If session doesn't exist or is expired, delete it and redirect to index
+      if (session) {
+        delete sessions[sessionKey];
+        res.redirect('/index.html');
+      } else {
+        // If session is not found, redirect to index
+        res.redirect('/index.html');
+      }
     }
   } else {
-    res.redirect("/index.html");
+    // If no session cookie, redirect to index
+    res.redirect('/index.html');
   }
 }
 
-app.use(express.static("public_html"));
+// Middleware for serving static files, but with authentication 
+//for certain paths
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
+  // Check if request is for 'home.html'
+  if (req.path === '/home.html') {
+    // Authenticate before serving these files
+    authenticate(req, res, next);
+  } else {
+    next();
+  }
+}, express.static('public_html'));
 
-app.use(bp.json());
 
-// /get/users/ (GET) Should return a JSON array containing the information for every user in the database.
-app.get("/get/users/", (req, res) => {
-  User.find({})
-    .then((users) => {
-      res.json(users);
+// POST route for handling the login process
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+
+  User.findOne({ username: username })
+    .then(user => {
+      if (!user) {
+        return res.status(401).json({ success: false, message: 'Incorrect username or password.' });
+      }
+
+      // Compare hashed password
+      bcrypt.compare(password, user.password, (err, result) => {
+        if (result) {
+          let sid = addSession(username);
+          res.cookie('session_id', sid, { maxAge: 1200000, httpOnly: true });
+          res.json({ success: true, redirectTo: '/home.html' });
+        } else {
+          res.status(401).json({ success: false, message: 'Incorrect username or password.' });
+        }
+      });
     })
-    .catch((err) => {
-      res.status(500).send({ error: "Failed to fetch users" });
+    .catch(err => {
+      res.status(500).json({ success: false, message: 'An error occurred during login.' });
     });
 });
 
-// /get/recipes to get all recipes from the database.
-app.get("/get/recipes", (req, res) => {
-  Recipe.find({})
-    .then((recipes) => res.json(recipes))
-    .catch((err) => res.status(500).send({ error: "Failed to fetch recipes" }));
+
+// POST route for handling the creation of a new account
+app.post('/create-account', (req, res) => {
+  const { username, password } = req.body;
+
+  // Check if the password meets the minimum length requirement
+  if (password.length < 7) {
+    return res.status(400).json({ success: false, message: 'Password must be at least 7 characters long.' });
+  }
+
+  User.findOne({ username: username })
+    .then(existingUser => {
+      if (existingUser) {
+        return res.status(409).json({ success: false, message: 'Username is already taken.' });
+      }
+
+      // Hash the password before saving the user
+      bcrypt.hash(password, saltRounds, (err, hash) => {
+        if (err) {
+          return res.status(500).json({ success: false, message: 'Error hashing password.' });
+        }
+
+        const newUser = new User({ username, password: hash });
+        newUser.save()
+          .then(() => {
+            res.status(201).json({ success: true, message: 'Account created successfully.' });
+          })
+          .catch(err => {
+            res.status(500).json({ success: false, message: 'Error creating new user.' });
+          });
+      });
+    })
+    .catch(err => {
+      res.status(500).json({ success: false, message: 'Error checking for existing user.' });
+    });
 });
 
-// /get/recipe/:user to get all recipes from a user
+
+// GET route to fetch all users from the database.
+app.get("/get/users", (req, res) => {
+  User.find({})
+    .then(users => {
+      // Respond with the list of users in JSON format.
+      res.json(users);
+    })
+    .catch(err => {
+      // Handle any errors in fetching users.
+      res.status(500).json({ success: false, message: 'Failed to fetch users.' });
+    });
+});
+
+// GET route to fetch all recipes from the database.
+app.get("/get/recipes", (req, res) => {
+  Recipe.find({})
+    .then(recipes => {
+      // Respond with the list of recipes in JSON format.
+      res.json(recipes);
+    })
+    .catch(err => {
+      // Handle any errors in fetching recipes.
+      res.status(500).json({ success: false, message: 'Failed to fetch recipes.' });
+    });
+});
+
+// GET route to fetch all recipes from a specific user.
 app.get("/get/recipe/:user", (req, res) => {
   User.findOne({ username: req.params.user })
     .populate("recipes")
-    .then((user) => res.json(user.recipes))
-    .catch((err) =>
-      res.status(500).send({ error: "Failed to fetch user recipes" })
-    );
+    .then(user => {
+      if (!user) {
+        // If the user is not found, respond with an error.
+        return res.status(404).json({ success: false, message: 'User not found.' });
+      }
+      // Respond with the user's recipes.
+      res.json(user.recipes);
+    })
+    .catch(err => {
+      // Handle any errors in fetching user recipes.
+      res.status(500).json({ success: false, message: 'Failed to fetch user recipes.' });
+    });
 });
 
-// /search/recipe/:keyword to look for all recipes that have the keyword in their title.
+// GET route to search for recipes by a keyword in their title.
 app.get("/search/recipe/:keyword", (req, res) => {
   Recipe.find({ title: { $regex: req.params.keyword, $options: "i" } })
-    .then((recipes) => res.json(recipes))
-    .catch((err) =>
-      res.status(500).send({ error: "Failed to search recipes" })
-    );
+    .then(recipes => {
+      // Respond with the matching recipes.
+      res.json(recipes);
+    })
+    .catch(err => {
+      // Handle any errors in the search process.
+      res.status(500).json({ success: false, message: 'Failed to search recipes.' });
+    });
 });
 
-// /add/user/ (POST) Should add a user to the database. The username and password should be sent as POST parameter(s).
-app.post("/add/user/", async (req, res) => {
-  const { username, password } = req.body;
-
-  // Check if username and password are provided.
-  if (!username || !password) {
-    return res
-      .status(400)
-      .send({ error: "Both username and password are required" });
-  }
-  // Create a new user instance
-  const newUser = new User({
-    username,
-    password,
-    recipes: [],
-  });
-
-  try {
-    const savedUser = await newUser.save();
-    res
-      .status(201)
-      .send({ message: "User added successfully", userId: savedUser._id });
-  } catch (err) {
-    if (err.code === 11000) {
-      return res.status(400).send({ error: "Username already exists" });
-    }
-    return res.status(500).send({ error: "Failed to add user" });
-  }
-});
-
-/*
-    Post request to log in a user 
-*/
-app.post("/account/login", (req, res) => {
-  console.log(sessions);
-  let u = req.body;
-  let p1 = User.find({ username: u.username, password: u.password }).exec();
-  p1.then((results) => {
-    if (results.length == 0) {
-      res.end("Coult not find account");
-    } else {
-      let sid = addSession(u.username);
-      res.cookie("login", { username: u.username, sessionID: sid });
-      res.end("SUCCESS");
-    }
-  });
-});
-
-// /add/recipe/:username add a recipe to an associated user.
+// POST route to add a recipe to a specific user.
 app.post("/add/recipe/:username", async (req, res) => {
   try {
     const user = await User.findOne({ username: req.params.username });
     if (!user) {
-      return res.status(404).send({ error: "User not found" });
+      // If the user is not found, respond with an error.
+      return res.status(404).json({ success: false, message: 'User not found.' });
     }
 
     const newRecipe = new Recipe(req.body);
-    const savedRecipe = await newRecipe.save();
-    user.recipes.push(savedRecipe._id);
+    await newRecipe.save();
+    user.recipes.push(newRecipe._id);
     await user.save();
 
-    res.status(201).send({ message: "Recipe added successfully" });
+    // Respond with success message.
+    res.status(201).json({ success: true, message: 'Recipe added successfully.' });
   } catch (err) {
-    res.status(500).send({ error: "Failed to add recipe" });
+    // Handle any errors in adding a recipe.
+    res.status(500).json({ success: false, message: 'Failed to add recipe.' });
   }
+});
+
+
+// Logout endpoint in server.js
+app.post('/logout', (req, res) => {
+  let sessionCookie = req.cookies['session_id'];
+
+  if (sessionCookie && sessions[sessionCookie]) {
+      // Delete the session from the server
+      delete sessions[sessionCookie];
+      // Clear the session cookie
+      res.clearCookie('session_id');
+      res.json({ success: true, message: 'Logged out successfully.' });
+  } else {
+      res.status(400).json({ success: false, message: 'Not logged in.' });
+  }
+});
+
+// API endpoint to add a comment
+app.post('/recipe/comment/:recipeId', (req, res) => {
+  const { username, text } = req.body;
+  const newComment = new Comment({
+    recipe: req.params.recipeId,
+    username: username,
+    text: text
+  });
+
+  newComment.save()
+    .then(comment => {
+      return Recipe.findById(req.params.recipeId);
+    })
+    .then(recipe => {
+      if (!recipe) return res.status(404).json({ message: 'Recipe not found.' });
+      recipe.comments.push(comment._id);
+      return recipe.save();
+    })
+    .then(() => res.json({ message: 'Comment added successfully.' }))
+    .catch(err => res.status(500).json({ message: 'Error adding comment.' }));
+});
+
+// POST route for liking a recipe
+app.post('/recipe/like/:recipeId', (req, res) => {
+  const userId = req.body.userId; // Assuming the user's ID is sent in the request body
+  Recipe.findById(req.params.recipeId)
+    .then(recipe => {
+      if (!recipe) return res.status(404).json({ message: 'Recipe not found.' });
+      recipe.likes += 1;
+      recipe.likedBy.push(userId);
+      return recipe.save();
+    })
+    .then(() => res.json({ message: 'Recipe liked successfully.' }))
+    .catch(err => res.status(500).json({ message: 'Error liking recipe.' }));
+});
+
+// GET route to fetch recipes sorted by likes
+app.get('/recipes/most-liked', (req, res) => {
+  Recipe.find({})
+    .sort({ likes: -1 }) // Sort by likes in descending order
+    .then(recipes => res.json(recipes))
+    .catch(err => res.status(500).json({ message: 'Error fetching recipes.' }));
+});
+
+// GET route to fetch recipes liked by a specific user
+app.get('/recipes/liked-by/:userId', (req, res) => {
+  Recipe.find({ likedBy: req.params.userId })
+    .then(recipes => res.json(recipes))
+    .catch(err => res.status(500).json({ message: 'Error fetching recipes.' }));
+});
+
+// GET route to fetch recipes by category
+app.get('/recipes/category/:category', (req, res) => {
+  Recipe.find({ category: req.params.category })
+    .then(recipes => res.json(recipes))
+    .catch(err => res.status(500).json({ message: 'Error fetching recipes.' }));
 });
 
 app.listen(port, () =>
   console.log(`App listening at http://localhost:${port}`)
 );
 
-module.exports = { User, Recipe }; // Used only for seeding DB
+// Used only for seeding DB
+module.exports = { User, Recipe };

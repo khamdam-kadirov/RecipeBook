@@ -1,6 +1,6 @@
 /*
  * Author: Igor, John, Sherali, Khamdam
- * Date: 11/30/2023
+ * Date: 12/06/2023
  * Class: CSC 337
  * Instructor: Benjamin Dicken
  *
@@ -10,67 +10,104 @@
  * login etc.
  */
 
-function addUser() {
-    /**
-     * Description: This function is responsible for adding
-     * users to the marketplace, by gathering the Client's input
-     * for username and password and sending a request to the server.
-     *
-     * Parameters: None
-     *
-     * Return: None
+
+document.addEventListener('DOMContentLoaded', function() {
+  const loginForm = document.getElementById('userForm');
+  if (loginForm) {
+     /**
+      * Description: Sets up an event listener for the login form. On form submission,
+      * it sends the user's credentials to the server for authentication. If 
+      * successful, redirects to the home page, else displays an error message.
+      *
+      * Parameters: None
+      * Return: None
      */
-    const username = document.getElementById("usernameCreate").value;
-    const password = document.getElementById("passwordCreate").value;
-  
-    fetch("/add/user/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
-    })
-      .then((response) => response.json())
-      .then((data) => alert(data.message || data.error))
-      .catch((error) => console.error("Error:", error));
-  }
-  
-  function login() {
-    /**
-     * Description: This function is responsible for sending
-     * a login request to the server and loging the user in.
-     * The request is to /account/login/
-     *
-     * Parameters: None
-     *
-     * Return: None
-     */
-    let us = document.getElementById("usernameLogin").value;
-    let pw = document.getElementById("passwordLogin").value;
-    let data = { username: us, password: pw };
-    let p = fetch("/account/login/", {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: { "Content-Type": "application/json" },
-    });
-    p.then((response) => {
-      return response.text();
-    }).then((text) => {
-      console.log(text);
-      if (text.startsWith("SUCCESS")) {
-        alert(text);
-        var welcomeMsg = "Welcome " + us + "! What would you like to do?";
-        localStorage.setItem("welcomeMsg", welcomeMsg);
-        localStorage.setItem("username", us);
-        window.location.href = "./home.html";
-      } else {
-        document.getElementById("loginFail").innerText =
-          "Issue logging with that info";
-      }
-    });
+      loginForm.addEventListener('submit', function(event) {
+          event.preventDefault();
+          const username = document.getElementById('usernameLogin').value;
+          const password = document.getElementById('passwordLogin').value;
+
+          fetch('/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username, password }),
+              credentials: 'same-origin'
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  localStorage.setItem('sessionId', data.sessionId);
+                  window.location.href = '/home.html';
+              } else {
+                  alert('Login failed: ' + data.message);
+              }
+          })
+          .catch(error => {
+              console.error('Error:', error);
+          });
+      });
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
+  const createAccountForm = document.getElementById('createForm');
+  if (createAccountForm) {
+      /**
+       * Description: Sets up an event listener for the account creation form. 
+       * On submission, it sends the new account's details to the server. If account
+       * creation is successful, redirects to the login page,
+       * otherwise displays an error message.
+       *
+       * Parameters: None
+       * Return: None
+       */
+      createAccountForm.addEventListener('submit', function(event) {
+          event.preventDefault();
+          const username = document.getElementById('usernameCreate').value;
+          const password = document.getElementById('passwordCreate').value;
+
+          fetch('/create-account', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username, password })
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  alert('Account created successfully!');
+                  window.location.href = '/signin.html';
+              } else {
+                  alert('Account creation failed: ' + data.message);
+              }
+          })
+          .catch(error => {
+              console.error('Error:', error);
+          });
+      });
+  }
+});
+
+const logoutButton = document.getElementById('logout');
+if (logoutButton) {
+    logoutButton.addEventListener('click', function() {
+        fetch('/logout', {
+            method: 'POST',
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to the login page or index page after successful logout
+                window.location.href = '/index.html';
+            } else {
+                alert('Logout failed: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('commentForm');
 
   form.onsubmit = function(e) {
