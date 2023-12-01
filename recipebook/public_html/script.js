@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Fetch user profile data
     fetch('/get-user-profile', {
         method: 'GET',
         credentials: 'include'
@@ -166,18 +167,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const profileImage = document.getElementById('profileImage');
         const userName = document.getElementById('userName');
         const userBio = document.getElementById('userBio');
+        const firstNameInput = document.getElementById('firstName');
+        const lastNameInput = document.getElementById('lastName');
+        const bioInput = document.getElementById('bio');
+
+        // Update profile image, name, and bio display
         if (data.profileImage) {
-            // Assuming 'profileImage' contains the filename of the image
             profileImage.src = data.profileImage;
         } else {
-            // Set to default image if no profile picture is available
-            profileImage.src = '/av.png';
+            profileImage.src = '/default_profile.png';
         }
         if (userName) {
             userName.textContent = `${data.firstName} ${data.lastName}`;
         }
         if (userBio) {
             userBio.textContent = data.bio;
+        }
+
+        // Set form fields values for editing
+        if (firstNameInput) {
+            firstNameInput.value = data.firstName || '';
+        }
+        if (lastNameInput) {
+            lastNameInput.value = data.lastName || '';
+        }
+        if (bioInput) {
+            bioInput.value = data.bio || '';
         }
     })
     .catch(error => {
