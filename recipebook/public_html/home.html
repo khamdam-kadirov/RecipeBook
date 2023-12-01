@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="homeStyle.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Foodie Feed</title>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-logo">Foodie</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="listings.html">Listings</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="user-container">
+                <button onclick="logOut()" class="userContent">Log Out</button>
+                <button onclick="showUserPost()" class="userContent">See My Post</button>
+            </div>
+        </nav>
+    </header>
+    
+    <aside class="filter-sidebar">
+        <div id="filterHead">
+            <h2 id="headerF">Filter Recipes</h2>
+            <button onclick="applyFilter()" id="applyButton">Apply Filter</button>
+        </div>
+        <br>
+        <form id="filterForm">
+            <label id="mealType">
+                <h4>Meal Type</h4>
+                <br>
+                <input type="radio" name="meal" value="Default" class="mealBtn" checked> Default<br>
+                <input type="radio" name="meal" value="Soup" class="mealBtn"> Soup<br>
+                <input type="radio" name="meal" value="Pan-fried" class="mealBtn"> Pan-fried<br>
+                <input type="radio" name="meal" value="Steamed" class="mealBtn"> Steamed<br>
+                <input type="radio" name="meal" value="MainDish" class="mealBtn"> MainDish<br>
+                <input type="radio" name="meal" value="Dessert" class="mealBtn"> Dessert<br>
+                <input type="radio" name="meal" value="Vegan" class="mealBtn"> Vegan<br>
+                <input type="radio" name="meal" value="Grilled" class="mealBtn"> Grilled<br>
+            </label>
+            <br>
+            <label id="sortBy">
+                <h4>Sort By</h4>
+                <br>
+                <input type="radio" name="sort" value="Default" class="sortBtn" checked> Default<br>
+                <input type="radio" name="sort" value="Most Likes" class="sortBtn"> High Likes<br>
+                <input type="radio" name="sort" value="User Liked" class="sortBtn"> User Liked<br>
+            </label>
+            <br>
+        </form>
+    </aside>
+
+    <main>
+        <input type="text" id="searchInput" placeholder="Search for your meal!">
+        <button input="searchButton" onclick="searchRecipe()" id="searchBtn">
+            <i class="fas fa-search"></i>
+        </button>
+        <button class="create-listing-btn" onclick="createRecipe()">Create a Listing</button>
+        <section id="recipe-feed">
+            <article class="recipe-post">
+                <img src="signin.jpg" alt="Delicious Pasta" class="recipe-image">
+                <div class="recipe-content">
+                    <h2>Pasta al Pomodoro</h2>
+                    <p>This classic tomato pasta is a simple yet delicious dish that's perfect for weeknight dinners.</p>
+                </div>
+            </article>
+            <article class="recipe-post">
+                <img src="food-image2.jpg" alt="Fresh Salad" class="recipe-image">
+                <div class="recipe-content">
+                    <h2>Garden Fresh Salad</h2>
+                    <p>A refreshing mix of greens, veggies, and a light vinaigrette to keep you energized.</p>
+                </div>
+                <button id="heartBtn" onclick="IncrementLike()">
+                    <i class="fas fa-heart"></i> 0
+                </button>
+                <button id="commentBtn" onclick="openCommentModal()">
+                    <i class="far fa-comment"></i>
+                </button>
+            </article>
+        </section>
+    </main>
+
+    <div id="commentModal">
+        <div class="modal-content">
+          <p>Comment Section</p>
+          <button class="close-button" onclick="closeCommentModal()">Close</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 Foodie. All rights reserved.</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
