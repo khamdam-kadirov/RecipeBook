@@ -157,7 +157,7 @@ function removeSessions() {
   }
 }
 
-setInterval(removeSessions, 2000);
+setInterval(removeSessions, 20000);
 
 // This function authenticates the user by checking the session cookie.
 function authenticate(req, res, next) {
