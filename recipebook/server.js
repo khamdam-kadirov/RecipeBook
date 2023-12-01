@@ -50,7 +50,11 @@ const RecipeSchema = new Schema({
   likes: {
     type: Number,
     default: 0
-  }
+  },
+  likedBy: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }]
 });
 
 const Recipe = mongoose.model("Recipe", RecipeSchema);
@@ -361,19 +365,41 @@ app.post('/recipe/comment/:recipeId', (req, res) => {
     .catch(err => res.status(500).json({ message: 'Error adding comment.' }));
 });
 
-// API endpoint for liking a recipe
+// POST route for liking a recipe
 app.post('/recipe/like/:recipeId', (req, res) => {
+  const userId = req.body.userId; // Assuming the user's ID is sent in the request body
   Recipe.findById(req.params.recipeId)
     .then(recipe => {
       if (!recipe) return res.status(404).json({ message: 'Recipe not found.' });
       recipe.likes += 1;
+      recipe.likedBy.push(userId);
       return recipe.save();
     })
     .then(() => res.json({ message: 'Recipe liked successfully.' }))
     .catch(err => res.status(500).json({ message: 'Error liking recipe.' }));
 });
 
+// GET route to fetch recipes sorted by likes
+app.get('/recipes/most-liked', (req, res) => {
+  Recipe.find({})
+    .sort({ likes: -1 }) // Sort by likes in descending order
+    .then(recipes => res.json(recipes))
+    .catch(err => res.status(500).json({ message: 'Error fetching recipes.' }));
+});
 
+// GET route to fetch recipes liked by a specific user
+app.get('/recipes/liked-by/:userId', (req, res) => {
+  Recipe.find({ likedBy: req.params.userId })
+    .then(recipes => res.json(recipes))
+    .catch(err => res.status(500).json({ message: 'Error fetching recipes.' }));
+});
+
+// GET route to fetch recipes by category
+app.get('/recipes/category/:category', (req, res) => {
+  Recipe.find({ category: req.params.category })
+    .then(recipes => res.json(recipes))
+    .catch(err => res.status(500).json({ message: 'Error fetching recipes.' }));
+});
 
 app.listen(port, () =>
   console.log(`App listening at http://localhost:${port}`)
