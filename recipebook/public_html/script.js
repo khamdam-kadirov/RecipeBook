@@ -199,3 +199,39 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Error fetching user data:', error);
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const recipeForm = document.getElementsByClassName('recipeForm')[0];
+    if (recipeForm) {
+      recipeForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+  
+        const formData = new FormData(recipeForm);
+  
+        fetch('/add/recipe', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            alert('Recipe posted successfully!');
+            window.location.href = '/home.html';
+          } else {
+            alert('Failed to post recipe: ' + data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('An error occurred while posting the recipe.');
+        });
+      });
+    }
+  });
+  

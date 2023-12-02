@@ -56,7 +56,12 @@ const RecipeSchema = new Schema({
   likedBy: [{
     type: Schema.Types.ObjectId,
     ref: 'User'
-  }]
+  }],
+  posted_by: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
 });
 
 const Recipe = mongoose.model("Recipe", RecipeSchema);
@@ -111,7 +116,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-      cb(null, 'public_html/uploads');
+      cb(null, 'public_html/profile_uploads');
   },
   filename: function (req, file, cb) {
       cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
@@ -120,8 +125,20 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Serve static files from the uploads directory
-app.use('/uploads', express.static('public_html/uploads'));
+const recipeImageStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public_html/recipe_uploads');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+  }
+});
+
+const recipeImageUpload = multer({ storage: recipeImageStorage });
+
+
+app.use('/profile_uploads', express.static('public_html/profile_uploads'));
+app.use('/recipe_uploads', express.static('public_html/recipe_uploads'));
 
 // Object to hold active sessions with session ID as key
 let sessions = {};
@@ -331,26 +348,44 @@ app.get("/search/recipe/:keyword", (req, res) => {
     });
 });
 
-// POST route to add a recipe to a specific user.
-app.post("/add/recipe/:username", async (req, res) => {
-  try {
-    const user = await User.findOne({ username: req.params.username });
-    if (!user) {
-      // If the user is not found, respond with an error.
-      return res.status(404).json({ success: false, message: 'User not found.' });
-    }
+// POST route to add a recipe.
+app.post('/add/recipe', authenticate, recipeImageUpload.single('image'), (req, res) => {
+  const { title, category, content, time, calories, difficulty } = req.body;
+  const imagePath = req.file ? '/recipe_uploads/' + req.file.filename : '';
+  const username = req.session.username;
 
-    const newRecipe = new Recipe(req.body);
-    await newRecipe.save();
-    user.recipes.push(newRecipe._id);
-    await user.save();
+  User.findOne({ username: username })
+    .then(user => {
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found.' });
+      }
 
-    // Respond with success message.
-    res.status(201).json({ success: true, message: 'Recipe added successfully.' });
-  } catch (err) {
-    // Handle any errors in adding a recipe.
-    res.status(500).json({ success: false, message: 'Failed to add recipe.' });
-  }
+      const newRecipe = new Recipe({
+        title,
+        category,
+        content,
+        image: imagePath,
+        time,
+        calories,
+        difficulty,
+        posted_by: user._id 
+      });
+
+      newRecipe.save()
+        .then(savedRecipe => {
+          user.recipes.push(savedRecipe._id);
+          return user.save();
+        })
+        .then(() => {
+          res.status(201).json({ success: true, message: 'Recipe added successfully.', recipeId: newRecipe._id });
+        })
+        .catch(err => {
+          res.status(500).json({ success: false, message: 'Failed to save recipe or update user.', error: err });
+        });
+    })
+    .catch(err => {
+      res.status(500).json({ success: false, message: 'Error finding user.', error: err });
+    });
 });
 
 
@@ -375,7 +410,7 @@ app.put('/update-profile', authenticate, upload.single('profileImage'), (req, re
   let updateData = { ...req.body };
 
   if (req.file) {
-      const profileImagePath = '/uploads/' + req.file.filename;
+      const profileImagePath = '/profile_uploads/' + req.file.filename;
       updateData.profileImage = profileImagePath;
   }
 
@@ -419,7 +454,7 @@ app.post('/upload-profile-image', authenticate, upload.single('profileImage'), (
       return res.status(400).json({ message: 'No image file provided.' });
   }
 
-  const profileImagePath = '/uploads/' + req.file.filename;
+  const profileImagePath = '/profile_uploads/' + req.file.filename;
   User.findOneAndUpdate({ username: username }, { profileImage: profileImagePath }, { new: true })
       .then(user => {
           if (!user) {
