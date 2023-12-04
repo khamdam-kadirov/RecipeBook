@@ -215,11 +215,24 @@ function populateRecipes(objects) {
     const newRecipePost = document.createElement('article');
     newRecipePost.className = 'recipe-post';
 
-    // Image data
-    const imageElement = document.createElement('img');
-    imageElement.src = item.image;
-    imageElement.alt = item.title;
-    imageElement.className = 'recipe-image';
+    if (item.image && item.image.data) {
+      let image = document.createElement("img");
+      let buffer = new Uint8Array(item.image.data);
+      let base64String = buffer.reduce((data, byte) => {
+          return data + String.fromCharCode(byte);
+      }, '');
+      base64String = btoa(base64String); // Encode to Base64
+      image.src = `data:image/png;base64,${base64String}`;
+      image.alt = "Recipe Picture";
+      image.className = 'recipe-image';
+      newRecipePost.appendChild(image);
+  } else{
+    let image = document.createElement("img");
+    image.src = './default-recipe.jpg';
+    image.alt = "Recipe Picture";
+    image.className = 'recipe-image';
+    newRecipePost.appendChild(image);
+  }
 
     // Create recipe contents
     const contentElement = document.createElement('div');
@@ -251,7 +264,7 @@ function populateRecipes(objects) {
     };
 
     // Add elements to the article
-    newRecipePost.appendChild(imageElement);
+    
     newRecipePost.appendChild(contentElement);
     newRecipePost.appendChild(likeButton);
     newRecipePost.appendChild(commentButton);
@@ -476,19 +489,25 @@ document.addEventListener('DOMContentLoaded', function() {
         return response.json();
     })
     .then(data => {
-        const profileImage = document.getElementById('profileImage');
+        const profileImageElement = document.getElementById('profileImage');
         const userName = document.getElementById('userName');
         const userBio = document.getElementById('userBio');
         const firstNameInput = document.getElementById('firstName');
         const lastNameInput = document.getElementById('lastName');
         const bioInput = document.getElementById('bio');
 
-        // Update profile image, name, and bio display
-        if (data.profileImage) {
-            profileImage.src = data.profileImage;
+        // Update profile image
+        if (data.profileImage && data.profileImage.data) {
+          let buffer = new Uint8Array(data.profileImage.data);
+          let base64String = buffer.reduce((data, byte) => {
+              return data + String.fromCharCode(byte);
+          }, '');
+          base64String = btoa(base64String); // Encode to Base64
+          profileImageElement.src = `data:image/png;base64,${base64String}`;
         } else {
-            profileImage.src = '/default_profile.png';
+            profileImageElement.src = '/default_profile.png';
         }
+
         if (userName) {
             userName.textContent = `${data.firstName} ${data.lastName}`;
         }
@@ -513,37 +532,37 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    const recipeForm = document.getElementsByClassName('recipeForm')[0];
-    if (recipeForm) {
+  const recipeForm = document.getElementsByClassName('recipeForm')[0];
+  if (recipeForm) {
       recipeForm.addEventListener('submit', function(event) {
-        event.preventDefault();
-  
-        const formData = new FormData(recipeForm);
-  
-        fetch('/add/recipe', {
-          method: 'POST',
-          body: formData,
-          credentials: 'include'
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          if (data.success) {
-            alert('Recipe posted successfully!');
-            window.location.href = '/home.html';
-          } else {
-            alert('Failed to post recipe: ' + data.message);
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('An error occurred while posting the recipe.');
-        });
+          event.preventDefault();
+
+          const formData = new FormData(recipeForm);
+
+          fetch('/add/recipe', {
+              method: 'POST',
+              body: formData,
+              credentials: 'include'
+          })
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              return response.json();
+          })
+          .then(data => {
+              if (data.success) {
+                  alert('Recipe posted successfully!');
+                  window.location.href = '/home.html';
+              } else {
+                  alert('Failed to post recipe: ' + data.message);
+              }
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              alert('An error occurred while posting the recipe.');
+          });
       });
-    }
+  }
   });
   

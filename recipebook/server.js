@@ -41,7 +41,7 @@ const RecipeSchema = new Schema({
     required: true,
   },
   image: {
-    type: String,
+    type: Buffer,
     required: false,
   },
   time: {
@@ -97,7 +97,7 @@ var UserSchema = new Schema({
   firstName: String,
   lastName: String,
   bio: String,
-  profileImage: String,
+  profileImage: Buffer,
   recipes: [ {type: Schema.Types.ObjectId, ref: "Recipe" } ],
 });
 
@@ -131,31 +131,9 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-      cb(null, 'public_html/profile_uploads');
-  },
-  filename: function (req, file, cb) {
-      cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-  }
-});
 
-const upload = multer({ storage: storage });
+const upload = multer({ limits: { fileSize: 5 * 1024 * 1024 } });
 
-const recipeImageStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'public_html/recipe_uploads');
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-  }
-});
-
-const recipeImageUpload = multer({ storage: recipeImageStorage });
-
-
-app.use('/profile_uploads', express.static('public_html/profile_uploads'));
-app.use('/recipe_uploads', express.static('public_html/recipe_uploads'));
 
 // Object to hold active sessions with session ID as key
 let sessions = {};
@@ -367,9 +345,9 @@ app.get("/search/recipe/:keyword", (req, res) => {
 });
 
 // POST route to add a recipe.
-app.post('/add/recipe', authenticate, recipeImageUpload.single('image'), (req, res) => {
+app.post('/add/recipe', authenticate, upload.single('image'), (req, res) => {
   const { title, category, content, time, calories, difficulty } = req.body;
-  const imagePath = req.file ? '/recipe_uploads/' + req.file.filename : '';
+  const imageBuffer = req.file.buffer;
   const username = req.session.username;
 
   User.findOne({ username: username })
@@ -382,11 +360,11 @@ app.post('/add/recipe', authenticate, recipeImageUpload.single('image'), (req, r
         title,
         category,
         content,
-        image: imagePath,
+        image: imageBuffer, // Save the buffer here
         time,
         calories,
         difficulty,
-        posted_by: user._id, 
+        posted_by: user._id,
         username: username
       });
 
@@ -428,9 +406,10 @@ app.put('/update-profile', authenticate, upload.single('profileImage'), (req, re
   const { username } = req.session;
   let updateData = { ...req.body };
 
+  const imageBuffer = req.file.buffer;
+
   if (req.file) {
-      const profileImagePath = '/profile_uploads/' + req.file.filename;
-      updateData.profileImage = profileImagePath;
+      updateData.profileImage = imageBuffer;
   }
 
   User.findOneAndUpdate({ username }, updateData, { new: true })
@@ -465,26 +444,6 @@ app.get('/get-user-profile', authenticate, (req, res) => {
     });
 });
 
-app.post('/upload-profile-image', authenticate, upload.single('profileImage'), (req, res) => {
-  const { username } = req.session;
-
-  // Check if file upload was successful
-  if (!req.file) {
-      return res.status(400).json({ message: 'No image file provided.' });
-  }
-
-  const profileImagePath = '/profile_uploads/' + req.file.filename;
-  User.findOneAndUpdate({ username: username }, { profileImage: profileImagePath }, { new: true })
-      .then(user => {
-          if (!user) {
-              return res.status(404).json({ message: 'User not found.' });
-          }
-          res.json({ message: 'Image uploaded successfully.', profileImage: profileImagePath });
-      })
-      .catch(err => {
-          res.status(500).json({ message: 'Error uploading image.' });
-      });
-});
 
 
 // API endpoint to add a comment
