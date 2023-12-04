@@ -64,11 +64,14 @@ document.addEventListener('DOMContentLoaded', function() {
           event.preventDefault();
           const username = document.getElementById('usernameCreate').value;
           const password = document.getElementById('passwordCreate').value;
+          const firstName = document.getElementById('firstNameCreate').value;
+          const lastName = document.getElementById('lastNameCreate').value;
+          const createAccountForm = document.getElementById('createForm');
 
           fetch('/create-account', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username, password })
+              body: JSON.stringify({ username, password, firstName, lastName })
           })
           .then(response => response.json())
           .then(data => {
@@ -109,40 +112,54 @@ if (logoutButton) {
 }
 
 
+// Modify the event listener for comment form submission
 document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('commentForm');
 
   form.onsubmit = function(e) {
-      e.preventDefault();
+    e.preventDefault();
 
-      const recipeId = 'someRecipeId'; // Replace with actual recipe ID
-      const commentText = document.getElementById('commentText').value;
-      const username = localStorage.getItem("username"); // Replace with the username from the user's session
+    const commentModal = document.getElementById('commentModal');
+    const recipeId = commentModal.getAttribute('data-recipe-id');
+    const commentText = document.getElementById('commentText').value;
+    const username = localStorage.getItem("username");
 
-      const data = {
-          username: username,
-          text: commentText
-      };
+    if (!commentText.trim()) {
+      alert("Please enter a comment.");
+      return;
+    }
 
-      fetch(`/recipe/comment/${recipeId}`, {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data)
-      })
-      .then(response => response.json())
-      .then(data => {
-          console.log('Success:', data);
-          // Handle success - maybe clear the form or show a success message
-      })
-      .catch((error) => {
-          console.error('Error:', error);
-          // Handle errors here, such as displaying an error message
-      });
+    const data = {
+      username: username,
+      text: commentText
+    };
+
+    fetch(`/recipe/comment/${recipeId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Success:', data);
+      document.getElementById('commentText').value = ''; // Clear the form
+      showComments(recipeId); // Refresh the comments
+      alert('Comment added successfully.');
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      alert('Error adding comment: ' + error.message);
+    });
   };
-  showComments();
 });
+
 
 function displayComments(comments) {
   const commentsContainer = document.getElementById('commentsContainer');
@@ -156,8 +173,7 @@ function displayComments(comments) {
   });
 }
 
-function showComments() {
-  const recipeId = 'someRecipeId'; // Replace with actual recipe ID
+function showComments(recipeId) {
 
   fetch(`/recipe/comments/${recipeId}`)
       .then(response => response.json())
@@ -199,7 +215,7 @@ function populateRecipes(objects) {
     const newRecipePost = document.createElement('article');
     newRecipePost.className = 'recipe-post';
 
-    // Image data should be added
+    // Image data
     const imageElement = document.createElement('img');
     imageElement.src = item.image;
     imageElement.alt = item.title;
@@ -208,66 +224,95 @@ function populateRecipes(objects) {
     // Create recipe contents
     const contentElement = document.createElement('div');
     contentElement.className = 'recipe-content';
-    contentElement.innerHTML = `<h2>${item.title}</h2><p>${item.content}</p>`;
+    contentElement.innerHTML = `
+      <h2>${item.title}</h2>
+      <p><strong>Category:</strong> ${item.category}</p>
+      <p><strong>Time:</strong> ${item.time || 'N/A'}</p>
+      <p><strong>Calories:</strong> ${item.calories || 'N/A'}</p>
+      <p><strong>Difficulty:</strong> ${item.difficulty || 'N/A'}</p>
+      <p><strong>Created by:</strong> ${item.username || 'N/A'}</p>
+      <p class = 'recipe-text'>${item.content}</p>
+    `;
 
-    // Create like button
+    // Like button
     const likeButton = document.createElement('button');
     likeButton.id = 'heartBtn';
-    likeButton.innerHTML = '<i class="fas fa-heart"></i> ' + item.likes; // Amount of like should be added
+    likeButton.innerHTML = `<i class="fas fa-heart"></i> <span id="likeCount-${item._id}">${item.likes}</span>`;
     likeButton.onclick = function () {
-      incrementLike();
+      incrementLike(item._id);
     };
 
-    // Create button for showing comments
+    // Comments button
     const commentButton = document.createElement('button');
     commentButton.id = 'commentBtn';
     commentButton.innerHTML = '<i class="far fa-comment"></i>';
     commentButton.onclick = function () {
-      openCommentModal();
+      openCommentModal(item._id);
     };
 
-    // Add elements into article tag
+    // Add elements to the article
     newRecipePost.appendChild(imageElement);
     newRecipePost.appendChild(contentElement);
     newRecipePost.appendChild(likeButton);
     newRecipePost.appendChild(commentButton);
 
-    // Add created article to recipe-feed section
+    // Add the article to the feed
     document.getElementById('recipe-feed').appendChild(newRecipePost);
   });
 }
 
-function incrementLike() {
-  const recipeId = "your_recipe_id"; // Replace with the actual recipe ID
-  const userId = localStorage.getItem("username");
+
+
+function incrementLike(recipeId) {
+  const username = localStorage.getItem("username");
 
   fetch(`/recipe/like/${recipeId}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ userId: userId }),
+    body: JSON.stringify({ username: username }),
   })
   .then(response => {
     if (!response.ok) {
+      if (response.status === 400) {
+        alert('You have already liked this recipe.');
+      }
       throw new Error('Failed to increment like');
     }
     return response.json();
   })
   .then(data => {
     console.log(data.message);
-    
-    const likeCountElement = document.getElementById('likeCount');
-    likeCountElement.textContent = data.likes;
+    updateLikeCount(recipeId);
   })
   .catch(error => {
-    console.error('There has been a problem with your fetch operation:', error);
+    console.error('Error:', error);
   });
 }
 
+function updateLikeCount(recipeId) {
+  fetch(`/recipe/likes/${recipeId}`)
+    .then(response => response.json())
+    .then(data => {
+      const likeCountElement = document.querySelector(`#likeCount-${recipeId}`);
+      if (likeCountElement) {
+        likeCountElement.textContent = data.likes;
+      }
+    })
+    .catch(error => {
+      console.error('Error updating like count:', error);
+    });
+}
+
+
 // Comment tab
-function openCommentModal() {
-  document.getElementById('commentModal').style.display = 'flex';
+function openCommentModal(recipeId) {
+  const commentModal = document.getElementById('commentModal');
+  commentModal.style.display = 'flex';
+  commentModal.setAttribute('data-recipe-id', recipeId);
+
+  showComments(recipeId); // Load comments for this recipe
 }
 
 function closeCommentModal() {
@@ -290,7 +335,7 @@ function applyFilter() {
         return response.json();
       })
       .then((objects) => {
-        populateItems(objects);
+        populateRecipes(objects);
       })
       .catch((error) => {
         console.log(error);
@@ -310,7 +355,7 @@ function applyFilter() {
           return response.json();
         })
         .then((objects) => {
-          populateItems(objects);
+          populateRecipes(objects);
         })
         .catch((error) => {
           console.log(error);
@@ -324,10 +369,21 @@ function applyFilter() {
           return response.json();
         })
         .then((objects) => {
-          populateItems(objects);
+          populateRecipes(objects);
         })
         .catch((error) => {
           console.log(error);
+      });
+    } else if (selectedSort === "Default") {
+      fetch("/get/recipes/")
+      .then((response) => {
+        return response.json();
+      })
+      .then((objects) => {
+        populateRecipes(objects);
+      })
+      .catch((error) => {
+        console.log(error);
       });
     }
   }
@@ -344,7 +400,7 @@ function showUserPost() {
       return response.json();
     })
     .then((objects) => {
-      populateItems(objects);
+      populateRecipes(objects);
     })
     .catch((error) => {
       console.log(error);
@@ -357,7 +413,7 @@ function showRecipes() {
       return response.json();
     })
     .then((objects) => {
-      populateItems(objects);
+      populateRecipes(objects);
     })
     .catch((error) => {
       console.log(error);
@@ -365,3 +421,129 @@ function showRecipes() {
 }
 
 showRecipes();
+
+document.addEventListener('DOMContentLoaded', function() {
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/update-profile', {
+                method: 'PUT',
+                credentials: 'include',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Check if the update was successful
+                if (data.success) {
+                    alert('Profile updated successfully.');
+                    window.location.href = '/myprofile.html';
+                } else {
+                    // Handle cases where 'success' is false
+                    alert('Failed to update profile: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating your profile.');
+            });
+        });
+    }
+
+    const imageUpload = document.getElementById('imageUpload');
+    if (imageUpload) {
+        imageUpload.addEventListener('change', function(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('profileImage').src = event.target.result;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch user profile data
+    fetch('/get-user-profile', {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        const profileImage = document.getElementById('profileImage');
+        const userName = document.getElementById('userName');
+        const userBio = document.getElementById('userBio');
+        const firstNameInput = document.getElementById('firstName');
+        const lastNameInput = document.getElementById('lastName');
+        const bioInput = document.getElementById('bio');
+
+        // Update profile image, name, and bio display
+        if (data.profileImage) {
+            profileImage.src = data.profileImage;
+        } else {
+            profileImage.src = '/default_profile.png';
+        }
+        if (userName) {
+            userName.textContent = `${data.firstName} ${data.lastName}`;
+        }
+        if (userBio) {
+            userBio.textContent = data.bio;
+        }
+
+        // Set form fields values for editing
+        if (firstNameInput) {
+            firstNameInput.value = data.firstName || '';
+        }
+        if (lastNameInput) {
+            lastNameInput.value = data.lastName || '';
+        }
+        if (bioInput) {
+            bioInput.value = data.bio || '';
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching user data:', error);
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const recipeForm = document.getElementsByClassName('recipeForm')[0];
+    if (recipeForm) {
+      recipeForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+  
+        const formData = new FormData(recipeForm);
+  
+        fetch('/add/recipe', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            alert('Recipe posted successfully!');
+            window.location.href = '/home.html';
+          } else {
+            alert('Failed to post recipe: ' + data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('An error occurred while posting the recipe.');
+        });
+      });
+    }
+  });
+  

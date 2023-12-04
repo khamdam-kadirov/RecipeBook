@@ -1,12 +1,3 @@
-<!-- 
- * Author: Igor Gabriel Bezerra Bernardon, John Ko, Khamdam Kadirov, Sherali Ozodov
- * Date: 11/30/2023
- * Class: CSC 337
- * Instructor: Benjamin Dicken
- *
- * Description: 
- -->
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -23,63 +14,64 @@
           <h1>Post Recipe</h1>
         </div>
         <div class="form-inner">
-          <form id="userForm">
+          <form enctype="multipart/form-data" class="recipeForm">
             <input
               type="text"
-              id="image"
-              placeholder="Upload Image"
-              class="post-input"
-              required
-            />
-            <input
-              type="text"
+              name="title"
               id="title"
               placeholder="Recipe Title"
               class="post-input"
               required
             />
-            <input
-              type="text"
-              id="content"
-              placeholder="Ingredients"
-              class="post-input"
-              required
-            />
-            <select id="category" class="post-input" required>
+            <select id="category" name="category" class="post-input" required>
               <option value="" disabled selected style="display: none">
                 Select Category
               </option>
-              <option value="Italian">Italian</option>
-              <option value="Chinese">Chinese</option>
-              <option value="French">French</option>
-              <option value="Vegan">Vegan</option>
-              <option value="Dessert">Dessert</option>
+              <option value="Soup">Soup</option>
+              <option value="Pan-fried">Pan-Fried</option>               
+              <option value="Steamed">Steamed</option>               
+              <option value="MainDish">Main Dish</option>               
+              <option value="Dessert">Dessert</option>               
+              <option value="Vegan">Vegan</option>               
+              <option value="Grilled">Grilled</option>
+              <option value="Other">Other</option>
             </select>
             <input
               type="text"
+              name="time"
               id="time"
               placeholder="Time to Prepare (e.g., 30 mins)"
               class="post-input"
             />
             <input
               type="number"
+              name="calories"
               id="calories"
               placeholder="Approximate Calories"
               class="post-input"
             />
             <input
               type="text"
+              name="difficulty"
               id="difficulty"
               placeholder="Difficulty Level (e.g., Easy, Hard)"
               class="post-input"
             />
             <textarea
-              id="instructions"
+              name="content"
+              id="content"
               placeholder="Recipe Instructions"
               class="post-input"
               rows="6"
               required
             ></textarea>
+            <input
+            type="file"
+            name="image"
+            id="image"
+            class="post-input"
+            
+            />
             <button type="submit" class="post-btn">Submit Recipe</button>
             <span id="submissionStatus"></span>
           </form>

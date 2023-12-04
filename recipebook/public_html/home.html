@@ -13,13 +13,12 @@
             <div class="nav-logo">Foodie</div>
             <ul class="nav-links">
                 <li><a href="index.html">Home</a></li>
-                <li><a href="about.html">About</a></li>
-                <li><a href="listings.html">Listings</a></li>
-                <li><a href="contact.html">Contact</a></li>
+                <li><a href="profile.html">My Profile</a></li>
+                <li><a href="createpost.html">Add Recipe</a></li>
             </ul>
             <div class="user-container">
                 <button onclick="logOut()" class="userContent" id="logout">Log Out</button>
-                <button onclick="showUserPost()" class="userContent">See My Post</button>
+                <button onclick="showUserPost()" class="userContent">Show My Posts</button>
             </div>
         </nav>
     </header>
@@ -32,16 +31,17 @@
         <br>
         <form id="filterForm">
             <label id="mealType">
-                <h4>Meal Type</h4>
+                <h4>Category</h4>
                 <br>
                 <input type="radio" name="meal" value="Default" class="mealBtn" checked> Default<br>
                 <input type="radio" name="meal" value="Soup" class="mealBtn"> Soup<br>
-                <input type="radio" name="meal" value="Pan-fried" class="mealBtn"> Pan-fried<br>
+                <input type="radio" name="meal" value="Pan-fried" class="mealBtn"> Pan-Fried<br>
                 <input type="radio" name="meal" value="Steamed" class="mealBtn"> Steamed<br>
-                <input type="radio" name="meal" value="MainDish" class="mealBtn"> MainDish<br>
+                <input type="radio" name="meal" value="MainDish" class="mealBtn"> Main Dish<br>
                 <input type="radio" name="meal" value="Dessert" class="mealBtn"> Dessert<br>
                 <input type="radio" name="meal" value="Vegan" class="mealBtn"> Vegan<br>
                 <input type="radio" name="meal" value="Grilled" class="mealBtn"> Grilled<br>
+                <input type="radio" name="meal" value="Other" class="mealBtn"> Other<br>
             </label>
             <br>
             <label id="sortBy">
@@ -62,7 +62,7 @@
         </button>
         <button class="create-listing-btn" onclick="createRecipe()">Create a Listing</button>
         <section id="recipe-feed">
-            <article class="recipe-post">
+            <!-- <article class="recipe-post">
                 <img src="signin.jpg" alt="Delicious Pasta" class="recipe-image">
                 <div class="recipe-content">
                     <h2>Pasta al Pomodoro</h2>
@@ -87,11 +87,11 @@
                 <button id="commentBtn" onclick="openCommentModal()">
                     <i class="far fa-comment"></i>
                 </button>
-            </article>
+            </article> -->
         </section>
     </main>
 
-    <div id="commentModal">
+    <div id="commentModal" data-recipe-id="">
         <div class="modal-content">
           <p>Comment Section</p>
           <div id="commentsContainer">
