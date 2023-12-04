@@ -18,7 +18,7 @@
                 <li><a href="contact.html">Contact</a></li>
             </ul>
             <div class="user-container">
-                <button onclick="logOut()" class="userContent">Log Out</button>
+                <button onclick="logOut()" class="userContent" id="logout">Log Out</button>
                 <button onclick="showUserPost()" class="userContent">See My Post</button>
             </div>
         </nav>
@@ -68,6 +68,12 @@
                     <h2>Pasta al Pomodoro</h2>
                     <p>This classic tomato pasta is a simple yet delicious dish that's perfect for weeknight dinners.</p>
                 </div>
+                <button id="heartBtn" onclick="incrementLike()">
+                    <i class="fas fa-heart"></i> 0
+                </button>
+                <button id="commentBtn" onclick="openCommentModal()">
+                    <i class="far fa-comment"></i>
+                </button>
             </article>
             <article class="recipe-post">
                 <img src="food-image2.jpg" alt="Fresh Salad" class="recipe-image">
@@ -75,7 +81,7 @@
                     <h2>Garden Fresh Salad</h2>
                     <p>A refreshing mix of greens, veggies, and a light vinaigrette to keep you energized.</p>
                 </div>
-                <button id="heartBtn" onclick="IncrementLike()">
+                <button id="heartBtn" onclick="incrementLike()">
                     <i class="fas fa-heart"></i> 0
                 </button>
                 <button id="commentBtn" onclick="openCommentModal()">
@@ -88,6 +94,15 @@
     <div id="commentModal">
         <div class="modal-content">
           <p>Comment Section</p>
+          <div id="commentsContainer">
+            <div class="comment">
+                <strong>useranme: </strong> This recipe is amazing!
+            </div>
+          </div>
+          <form id="commentForm">
+            <textarea id="commentText" placeholder="Put the comments"></textarea>
+            <button type="submit" id="submitBtn">Submit</button>
+          </form>
           <button class="close-button" onclick="closeCommentModal()">Close</button>
         </div>
     </div>
@@ -96,5 +111,10 @@
         <p>&copy; 2023 Foodie. All rights reserved.</p>
     </footer>
     <script src="script.js"></script>
+    <script>
+        function createRecipe() {
+            window.location.href = "createpost.html"
+        }
+    </script>
 </body>
 </html>

@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
           .then(response => response.json())
           .then(data => {
               if (data.success) {
+                  localStorage.setItem("username", username);
                   localStorage.setItem('sessionId', data.sessionId);
                   window.location.href = '/home.html';
               } else {
@@ -107,6 +108,7 @@ if (logoutButton) {
     });
 }
 
+
 document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('commentForm');
 
@@ -115,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       const recipeId = 'someRecipeId'; // Replace with actual recipe ID
       const commentText = document.getElementById('commentText').value;
-      const username = 'currentUser'; // Replace with the username from the user's session
+      const username = localStorage.getItem("username"); // Replace with the username from the user's session
 
       const data = {
           username: username,
@@ -139,11 +141,39 @@ document.addEventListener('DOMContentLoaded', function() {
           // Handle errors here, such as displaying an error message
       });
   };
+  showComments();
 });
+
+function displayComments(comments) {
+  const commentsContainer = document.getElementById('commentsContainer');
+  commentsContainer.innerHTML = '';  // Clear the tab for comments
+
+  comments.forEach(comment => {
+      const commentElement = document.createElement('div');
+      commentElement.className = 'comment';
+      commentElement.innerHTML = `<strong>${comment.username}:</strong> ${comment.text}`;
+      commentsContainer.appendChild(commentElement);
+  });
+}
+
+function showComments() {
+  const recipeId = 'someRecipeId'; // Replace with actual recipe ID
+
+  fetch(`/recipe/comments/${recipeId}`)
+      .then(response => response.json())
+      .then(data => {
+          console.log('Comments:', data);
+          displayComments(data);
+      })
+      .catch(error => {
+          console.error('Error fetching comments:', error);
+      });
+}
+
 
 function searchRecipe() {
   let keyword = document.getElementById("searchInput").value;
-  let url = "http://localhost:80/search/recipe/" + keyword;
+  let url = "/search/recipe/" + keyword;
 
   fetch(url)
     .then((response) => {
@@ -171,8 +201,8 @@ function populateRecipes(objects) {
 
     // Image data should be added
     const imageElement = document.createElement('img');
-    // imageElement.src = imageUrl;
-    // imageElement.alt = title;
+    imageElement.src = item.image;
+    imageElement.alt = item.title;
     imageElement.className = 'recipe-image';
 
     // Create recipe contents
@@ -183,9 +213,9 @@ function populateRecipes(objects) {
     // Create like button
     const likeButton = document.createElement('button');
     likeButton.id = 'heartBtn';
-    likeButton.innerHTML = '<i class="fas fa-heart"></i> 0'; // Amount of like should be added
+    likeButton.innerHTML = '<i class="fas fa-heart"></i> ' + item.likes; // Amount of like should be added
     likeButton.onclick = function () {
-      IncrementLike();
+      incrementLike();
     };
 
     // Create button for showing comments
@@ -207,6 +237,34 @@ function populateRecipes(objects) {
   });
 }
 
+function incrementLike() {
+  const recipeId = "your_recipe_id"; // Replace with the actual recipe ID
+  const userId = localStorage.getItem("username");
+
+  fetch(`/recipe/like/${recipeId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ userId: userId }),
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to increment like');
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log(data.message);
+    
+    const likeCountElement = document.getElementById('likeCount');
+    likeCountElement.textContent = data.likes;
+  })
+  .catch(error => {
+    console.error('There has been a problem with your fetch operation:', error);
+  });
+}
+
 // Comment tab
 function openCommentModal() {
   document.getElementById('commentModal').style.display = 'flex';
@@ -225,20 +283,61 @@ function applyFilter() {
     }
   });
 
-  const sortButtons = document.getElementsByName('sort');
-  let selectedSort = '';
-  sortButtons.forEach(button => {
-    if (button.checked) {
-      selectedSort = button.value;
+  if (selectedMeal !== "Default") {
+    let url = '/recipes/category/' + selectedMeal;
+    fetch(url)
+      .then((response) => {
+        return response.json();
+      })
+      .then((objects) => {
+        populateItems(objects);
+      })
+      .catch((error) => {
+        console.log(error);
+    });
+  } else {
+    const sortButtons = document.getElementsByName('sort');
+    let selectedSort = '';
+    sortButtons.forEach(button => {
+      if (button.checked) {
+        selectedSort = button.value;
+      }
+    });
+
+    if (selectedSort === "Most Likes") {
+      fetch('/recipes/most-liked')
+        .then((response) => {
+          return response.json();
+        })
+        .then((objects) => {
+          populateItems(objects);
+        })
+        .catch((error) => {
+          console.log(error);
+      });
+    } else if (selectedSort === "User Liked") {
+      let username = localStorage.getItem("username");
+      let url = '/recipes/liked-by/' + username;
+
+      fetch(url)
+        .then((response) => {
+          return response.json();
+        })
+        .then((objects) => {
+          populateItems(objects);
+        })
+        .catch((error) => {
+          console.log(error);
+      });
     }
-  });
+  }
 
   // Filtering with server side code
 }
 
 function showUserPost() {
   let username = localStorage.getItem("username");  // When logged in, username should be stored in local storage
-  let url = "http://localhost:80/get/recipe/" + username;
+  let url = "/get/recipe/" + username;
 
   fetch(url)
     .then((response) => {
@@ -253,7 +352,7 @@ function showUserPost() {
 }
 
 function showRecipes() {
-  fetch("http://localhost:80/get/recipes/")
+  fetch("/get/recipes/")
     .then((response) => {
       return response.json();
     })

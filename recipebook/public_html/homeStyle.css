@@ -96,7 +96,7 @@ main {
     padding: 20px;
 }
 
-.recipe-feed {
+#recipe-feed {
     display: flex;
     flex-direction: column;
 }
@@ -151,6 +151,7 @@ footer {
 }
 
 .recipe-post {
+    position: relative;
     width: 80%;
     height: 500px;
     display: flex;
@@ -188,7 +189,7 @@ footer {
 }
 
 /* Filter Part */
-.countryBtn, .ingredBtn, .mealBtn, .sortBtn {
+.mealBtn, .sortBtn {
     margin-bottom: 10px;
     margin-left: 15px;
 }
@@ -255,8 +256,45 @@ footer {
     padding: 20px;
     border-radius: 5px;
     text-align: center;
-    width: 30%;
+    width: 30%; /* 수정된 부분: 전체 폭의 50%로 조절 */
     height: 70%;
+    display: flex;
+    flex-direction: column;
+}
+
+#commentsContainer {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.comment {
+    margin-bottom: 10px;
+}
+
+#commentForm {
+    display: flex;
+    flex-direction: row; /* 수정된 부분: 요소들을 가로로 나열하도록 설정 */
+    align-items: center; /* 수정된 부분: 세로 중앙 정렬 */
+    margin-top: 10px;
+}
+
+#commentText {
+    flex-grow: 1; /* 수정된 부분: 나머지 공간을 모두 차지하도록 설정 */
+    padding: 5px; /* 수정된 부분: 여백 추가 */
+    margin-right: 10px; /* 수정된 부분: 오른쪽 여백 추가 */
+}
+
+#submitBtn {
+    padding: 10px;
+    background-color: #007bff; /* Submit 버튼 배경색 */
+    color: #fff; /* Submit 버튼 글자색 */
+    border: none;
+    cursor: pointer;
+    border-radius: 5px; /* 둥근 모서리 적용 */
+}
+
+#submitBtn:hover {
+    background-color: #0056b3; /* Hover 시 배경색 변경 */
 }
 
 .close-button {
@@ -265,22 +303,25 @@ footer {
     padding: 10px;
     border: none;
     cursor: pointer;
-    position: relative;
-    top: 90%;
+    margin-top: 10px;
 }
 
+#heartBtn,
 #commentBtn {
+    position: absolute; /* 추가: position: absolute로 설정 */
+    bottom: 10px; /* 추가: 하단 여백 조절 */
+    right: 10px; /* 추가: 좌측 여백 조절 */
     background-color: white;
     border: white;
-    color: #0c234b;
     font-size: 30px;
     cursor: pointer;
 }
 
 #heartBtn {
-    background-color: white;
-    border: white;
     color: red;
-    font-size: 30px;
-    cursor: pointer;
+    margin-right: 50px;
+}
+
+#commentBtn {
+    color: #0c234b;
 }
