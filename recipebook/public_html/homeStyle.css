@@ -1,0 +1,340 @@
+/* Reset and Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9;
+}
+
+header {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2%;
+}
+
+nav ul {
+    list-style-type: none;
+    display: flex;
+}
+
+nav ul li {
+    margin-right: 20px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+}
+
+.create-listing-btn, #applyButton {
+    padding: 10px 20px;
+    background-color: #ff4757;
+    border: none;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.create-listing-btn {
+    position: absolute;
+    right: 2%;
+}
+
+.create-listing-btn:hover, #applyButton:hover {
+    background-color: #ff6b81;
+}
+
+#applyButton {
+    margin-bottom: 20px;
+}
+
+/* Filter Sidebar */
+.filter-sidebar {
+    width: 250px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: #fff;
+    padding: 1rem;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+}
+
+.filter-sidebar h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.userTab {
+    background-color: #fff;
+    position: absolute;
+    padding: 1rem;
+    width: 350px;
+    right: 0;
+    top: 13.7%;
+    height: 100%;
+    box-shadow: 5px 0 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Main Content */
+main {
+    margin-left: 250px;
+    padding: 20px;
+}
+
+#recipe-feed {
+    display: flex;
+    flex-direction: column;
+}
+
+.recipe-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 20px;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-size: large;
+}
+/* where the text for the content is */
+.recipe-text {
+    padding-bottom: 30px;
+    
+}
+/* Footer */
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .filter-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        box-shadow: none;
+    }
+
+    .filter-sidebar h2 {
+        text-align: center;
+    }
+
+    main {
+        margin-left: 0;
+    }
+
+    nav ul {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    nav ul li {
+        margin-bottom: 10px;
+    }
+}
+
+
+/* Recipe Feed */
+#recipe-feed {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Make the feed scrollable */
+    /* height: calc(100vh - 60px); */
+    padding-top: 1rem;
+    margin-bottom: 30px;
+}
+
+.recipe-post {
+    position: relative;
+    width: 80%;
+    height: 500px;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    padding-bottom: 100px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover; /* Maintain aspect ratio */
+    margin-right: 1rem;
+    border-radius: 10px;
+}
+
+/* Responsive Design for Feed */
+@media (max-width: 768px) {
+    .recipe-feed {
+        height: auto;
+    }
+
+    .recipe-post {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .recipe-image {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Filter Part */
+.mealBtn, .sortBtn {
+    margin-bottom: 10px;
+    margin-left: 15px;
+}
+
+#filterHead {
+    background-color: #0c234b;
+    margin-right: -20px;
+    margin-left: -20px;
+    margin-top: -16px;
+    text-align: center; 
+}
+
+#headerF {
+    color: white;
+    padding-top: 10px;
+}
+
+/* Search part */
+#searchInput {
+    height: 30px;
+    width: 30%;
+}
+
+#searchBtn {
+    height: 30px;
+    width: 30px;
+}
+
+/* Log out button */
+.user-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.userContent {
+    padding: 10px;
+    border: none;
+    border-radius: 20px;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+}
+
+.userContent:hover {
+    background-color: #0069d9;
+}
+
+/* Comment model */
+#commentModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+    width: 30%; /* 수정된 부분: 전체 폭의 50%로 조절 */
+    height: 70%;
+    display: flex;
+    flex-direction: column;
+}
+
+#commentsContainer {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.comment {
+    margin-bottom: 10px;
+}
+
+#commentForm {
+    display: flex;
+    flex-direction: row; /* 수정된 부분: 요소들을 가로로 나열하도록 설정 */
+    align-items: center; /* 수정된 부분: 세로 중앙 정렬 */
+    margin-top: 10px;
+}
+
+#commentText {
+    flex-grow: 1; /* 수정된 부분: 나머지 공간을 모두 차지하도록 설정 */
+    padding: 5px; /* 수정된 부분: 여백 추가 */
+    margin-right: 10px; /* 수정된 부분: 오른쪽 여백 추가 */
+}
+
+#submitBtn {
+    padding: 10px;
+    background-color: #007bff; /* Submit 버튼 배경색 */
+    color: #fff; /* Submit 버튼 글자색 */
+    border: none;
+    cursor: pointer;
+    border-radius: 5px; /* 둥근 모서리 적용 */
+}
+
+#submitBtn:hover {
+    background-color: #0056b3; /* Hover 시 배경색 변경 */
+}
+
+.close-button {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#heartBtn,
+#commentBtn {
+    position: absolute; /* 추가: position: absolute로 설정 */
+    bottom: 10px; /* 추가: 하단 여백 조절 */
+    right: 10px; /* 추가: 좌측 여백 조절 */
+    background-color: white;
+    border: white;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+#heartBtn {
+    color: red;
+    margin-right: 50px;
+}
+
+#commentBtn {
+    color: #0c234b;
+}

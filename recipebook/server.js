@@ -27,7 +27,6 @@ db.on("error", () => {
   console.log("MongoDB connection error:");
 });
 
-// Define the recipe schema
 const RecipeSchema = new Schema({
   title: {
     type: String,
@@ -42,6 +41,18 @@ const RecipeSchema = new Schema({
     required: true,
   },
   image: {
+    type: Buffer,
+    required: false,
+  },
+  time: {
+    type: String, // or Number, depending on how you want to store it
+    required: false,
+  },
+  calories: {
+    type: Number,
+    required: false,
+  },
+  difficulty: {
     type: String,
     required: false,
   },
@@ -62,6 +73,12 @@ const RecipeSchema = new Schema({
     ref: 'User',
     required: true
   },
+  username: {
+    type: String, 
+    required: false,
+  }
+},{
+  timestamps: true
 });
 
 const Recipe = mongoose.model("Recipe", RecipeSchema);
@@ -80,7 +97,7 @@ var UserSchema = new Schema({
   firstName: String,
   lastName: String,
   bio: String,
-  profileImage: String,
+  profileImage: Buffer,
   recipes: [ {type: Schema.Types.ObjectId, ref: "Recipe" } ],
 });
 
@@ -114,31 +131,9 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-      cb(null, 'public_html/profile_uploads');
-  },
-  filename: function (req, file, cb) {
-      cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-  }
-});
 
-const upload = multer({ storage: storage });
+const upload = multer({ limits: { fileSize: 5 * 1024 * 1024 } });
 
-const recipeImageStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'public_html/recipe_uploads');
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-  }
-});
-
-const recipeImageUpload = multer({ storage: recipeImageStorage });
-
-
-app.use('/profile_uploads', express.static('public_html/profile_uploads'));
-app.use('/recipe_uploads', express.static('public_html/recipe_uploads'));
 
 // Object to hold active sessions with session ID as key
 let sessions = {};
@@ -307,6 +302,7 @@ app.get("/get/users", (req, res) => {
 // GET route to fetch all recipes from the database.
 app.get("/get/recipes", (req, res) => {
   Recipe.find({})
+    .sort({ createdAt: -1 }) // Sort by createdAt in descending order
     .then(recipes => {
       // Respond with the list of recipes in JSON format.
       res.json(recipes);
@@ -349,9 +345,9 @@ app.get("/search/recipe/:keyword", (req, res) => {
 });
 
 // POST route to add a recipe.
-app.post('/add/recipe', authenticate, recipeImageUpload.single('image'), (req, res) => {
+app.post('/add/recipe', authenticate, upload.single('image'), (req, res) => {
   const { title, category, content, time, calories, difficulty } = req.body;
-  const imagePath = req.file ? '/recipe_uploads/' + req.file.filename : '';
+  const imageBuffer = req.file.buffer;
   const username = req.session.username;
 
   User.findOne({ username: username })
@@ -364,11 +360,12 @@ app.post('/add/recipe', authenticate, recipeImageUpload.single('image'), (req, r
         title,
         category,
         content,
-        image: imagePath,
+        image: imageBuffer, // Save the buffer here
         time,
         calories,
         difficulty,
-        posted_by: user._id 
+        posted_by: user._id,
+        username: username
       });
 
       newRecipe.save()
@@ -409,9 +406,10 @@ app.put('/update-profile', authenticate, upload.single('profileImage'), (req, re
   const { username } = req.session;
   let updateData = { ...req.body };
 
+  const imageBuffer = req.file.buffer;
+
   if (req.file) {
-      const profileImagePath = '/profile_uploads/' + req.file.filename;
-      updateData.profileImage = profileImagePath;
+      updateData.profileImage = imageBuffer;
   }
 
   User.findOneAndUpdate({ username }, updateData, { new: true })
@@ -446,63 +444,105 @@ app.get('/get-user-profile', authenticate, (req, res) => {
     });
 });
 
-app.post('/upload-profile-image', authenticate, upload.single('profileImage'), (req, res) => {
-  const { username } = req.session;
-
-  // Check if file upload was successful
-  if (!req.file) {
-      return res.status(400).json({ message: 'No image file provided.' });
-  }
-
-  const profileImagePath = '/profile_uploads/' + req.file.filename;
-  User.findOneAndUpdate({ username: username }, { profileImage: profileImagePath }, { new: true })
-      .then(user => {
-          if (!user) {
-              return res.status(404).json({ message: 'User not found.' });
-          }
-          res.json({ message: 'Image uploaded successfully.', profileImage: profileImagePath });
-      })
-      .catch(err => {
-          res.status(500).json({ message: 'Error uploading image.' });
-      });
-});
 
 
 // API endpoint to add a comment
 app.post('/recipe/comment/:recipeId', (req, res) => {
   const { username, text } = req.body;
+  const recipeId = req.params.recipeId;
+
   const newComment = new Comment({
-    recipe: req.params.recipeId,
+    recipe: recipeId, // Storing ObjectId of the recipe
     username: username,
     text: text
   });
 
   newComment.save()
     .then(comment => {
-      return Recipe.findById(req.params.recipeId);
-    })
-    .then(recipe => {
-      if (!recipe) return res.status(404).json({ message: 'Recipe not found.' });
-      recipe.comments.push(comment._id);
-      return recipe.save();
+      // After saving the comment, find the recipe and push the comment's ID into its comments array
+      return Recipe.findById(recipeId)
+        .then(recipe => {
+          if (!recipe) return res.status(404).json({ message: 'Recipe not found.' });
+          recipe.comments.push(comment._id);
+          return recipe.save();
+        });
     })
     .then(() => res.json({ message: 'Comment added successfully.' }))
-    .catch(err => res.status(500).json({ message: 'Error adding comment.' }));
+    .catch(err => res.status(500).json({ message: 'Error adding comment.', error: err }));
+});
+
+
+
+app.get('/recipe/comments/:recipeId', (req, res) => {
+  const recipeId = req.params.recipeId;
+
+  // Find the recipe by ID and populate its comments
+  Recipe.findById(recipeId)
+      .populate('comments') // Assuming 'comments' is an array of ObjectIds in RecipeSchema
+      .then(recipe => {
+          if (!recipe) {
+              return res.status(404).json({ message: 'Recipe not found.' });
+          }
+
+          // Optionally, you can further populate fields in each comment, 
+          // e.g., the user who made the comment, if needed
+          Comment.find({ '_id': { $in: recipe.comments }})
+              .populate('username') // Replace 'username' with the correct field if different
+              .then(comments => {
+                  res.json(comments);
+              })
+              .catch(err => {
+                  res.status(500).json({ message: 'Error fetching comments.', error: err });
+              });
+      })
+      .catch(err => {
+          res.status(500).json({ message: 'Error finding recipe.', error: err });
+      });
 });
 
 // POST route for liking a recipe
-app.post('/recipe/like/:recipeId', (req, res) => {
-  const userId = req.body.userId; // Assuming the user's ID is sent in the request body
+app.post('/recipe/like/:recipeId', async (req, res) => {
+  try {
+    const username = req.body.username;
+
+    const user = await User.findOne({ username: username });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const recipe = await Recipe.findById(req.params.recipeId);
+    if (!recipe) {
+      return res.status(404).json({ message: 'Recipe not found.' });
+    }
+
+    if (recipe.likedBy.includes(user._id)) {
+      return res.status(400).json({ message: 'You have already liked this recipe.' });
+    }
+
+    recipe.likes += 1;
+    recipe.likedBy.push(user._id);
+    await recipe.save();
+
+    res.json({ message: 'Recipe liked successfully.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error liking recipe.' });
+  }
+});
+
+
+// GET request to get likes for a recipe
+app.get('/recipe/likes/:recipeId', (req, res) => {
   Recipe.findById(req.params.recipeId)
     .then(recipe => {
-      if (!recipe) return res.status(404).json({ message: 'Recipe not found.' });
-      recipe.likes += 1;
-      recipe.likedBy.push(userId);
-      return recipe.save();
+      if (!recipe) {
+        return res.status(404).json({ message: 'Recipe not found.' });
+      }
+      // Send the total number of likes
+      res.json({ likes: recipe.likes });
     })
-    .then(() => res.json({ message: 'Recipe liked successfully.' }))
-    .catch(err => res.status(500).json({ message: 'Error liking recipe.' }));
+    .catch(err => res.status(500).json({ message: 'Error fetching recipe likes.' }));
 });
+
 
 // GET route to fetch recipes sorted by likes
 app.get('/recipes/most-liked', (req, res) => {
@@ -512,12 +552,23 @@ app.get('/recipes/most-liked', (req, res) => {
     .catch(err => res.status(500).json({ message: 'Error fetching recipes.' }));
 });
 
-// GET route to fetch recipes liked by a specific user
-app.get('/recipes/liked-by/:userId', (req, res) => {
-  Recipe.find({ likedBy: req.params.userId })
-    .then(recipes => res.json(recipes))
-    .catch(err => res.status(500).json({ message: 'Error fetching recipes.' }));
+// GET route to fetch recipes liked by a specific user based on username
+app.get('/recipes/liked-by/:username', (req, res) => {
+  // Find the user by username
+  User.findOne({ username: req.params.username })
+    .then(user => {
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
+
+      // Fetch recipes liked by the user's ID
+      return Recipe.find({ likedBy: user._id })
+        .then(recipes => res.json(recipes))
+        .catch(err => res.status(500).json({ message: 'Error fetching recipes.' }));
+    })
+    .catch(err => res.status(500).json({ message: 'Error finding user.' }));
 });
+
 
 // GET route to fetch recipes by category
 app.get('/recipes/category/:category', (req, res) => {

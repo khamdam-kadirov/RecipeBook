@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
           .then(response => response.json())
           .then(data => {
               if (data.success) {
+                  localStorage.setItem("username", username);
                   localStorage.setItem('sessionId', data.sessionId);
                   window.location.href = '/home.html';
               } else {
@@ -110,6 +111,330 @@ if (logoutButton) {
     });
 }
 
+
+// Modify the event listener for comment form submission
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('commentForm');
+
+  form.onsubmit = function(e) {
+    e.preventDefault();
+
+    const commentModal = document.getElementById('commentModal');
+    const recipeId = commentModal.getAttribute('data-recipe-id');
+    const commentText = document.getElementById('commentText').value;
+    const username = localStorage.getItem("username");
+
+    if (!commentText.trim()) {
+      alert("Please enter a comment.");
+      return;
+    }
+
+    const data = {
+      username: username,
+      text: commentText
+    };
+
+    fetch(`/recipe/comment/${recipeId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Success:', data);
+      document.getElementById('commentText').value = ''; // Clear the form
+      showComments(recipeId); // Refresh the comments
+      alert('Comment added successfully.');
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      alert('Error adding comment: ' + error.message);
+    });
+  };
+});
+
+
+function displayComments(comments) {
+  const commentsContainer = document.getElementById('commentsContainer');
+  commentsContainer.innerHTML = '';  // Clear the tab for comments
+
+  comments.forEach(comment => {
+      const commentElement = document.createElement('div');
+      commentElement.className = 'comment';
+      commentElement.innerHTML = `<strong>${comment.username}:</strong> ${comment.text}`;
+      commentsContainer.appendChild(commentElement);
+  });
+}
+
+function showComments(recipeId) {
+
+  fetch(`/recipe/comments/${recipeId}`)
+      .then(response => response.json())
+      .then(data => {
+          console.log('Comments:', data);
+          displayComments(data);
+      })
+      .catch(error => {
+          console.error('Error fetching comments:', error);
+      });
+}
+
+
+function searchRecipe() {
+  let keyword = document.getElementById("searchInput").value;
+  let url = "/search/recipe/" + keyword;
+
+  fetch(url)
+    .then((response) => {
+      return response.json();
+    })
+    .then((objects) => {
+      populateRecipes(objects);
+    })
+    .catch((error) => {
+      console.log(error);
+  });
+}
+
+/*
+  This function creates posts depending on the filters, 
+  or it will be implmented when the program started running.
+*/
+function populateRecipes(objects) {
+  let recipeTab = document.getElementById("recipe-feed");
+  recipeTab.innerHTML = "";  // Clear all existing contents
+
+  objects.forEach((item) => {
+    const newRecipePost = document.createElement('article');
+    newRecipePost.className = 'recipe-post';
+
+    if (item.image && item.image.data) {
+      let image = document.createElement("img");
+      let buffer = new Uint8Array(item.image.data);
+      let base64String = buffer.reduce((data, byte) => {
+          return data + String.fromCharCode(byte);
+      }, '');
+      base64String = btoa(base64String); // Encode to Base64
+      image.src = `data:image/png;base64,${base64String}`;
+      image.alt = "Recipe Picture";
+      image.className = 'recipe-image';
+      newRecipePost.appendChild(image);
+  } else{
+    let image = document.createElement("img");
+    image.src = './default-recipe.jpg';
+    image.alt = "Recipe Picture";
+    image.className = 'recipe-image';
+    newRecipePost.appendChild(image);
+  }
+
+    // Create recipe contents
+    const contentElement = document.createElement('div');
+    contentElement.className = 'recipe-content';
+    contentElement.innerHTML = `
+      <h2>${item.title}</h2>
+      <p><strong>Category:</strong> ${item.category}</p>
+      <p><strong>Time:</strong> ${item.time || 'N/A'}</p>
+      <p><strong>Calories:</strong> ${item.calories || 'N/A'}</p>
+      <p><strong>Difficulty:</strong> ${item.difficulty || 'N/A'}</p>
+      <p><strong>Created by:</strong> ${item.username || 'N/A'}</p>
+      <p class = 'recipe-text'>${item.content}</p>
+    `;
+
+    // Like button
+    const likeButton = document.createElement('button');
+    likeButton.id = 'heartBtn';
+    likeButton.innerHTML = `<i class="fas fa-heart"></i> <span id="likeCount-${item._id}">${item.likes}</span>`;
+    likeButton.onclick = function () {
+      incrementLike(item._id);
+    };
+
+    // Comments button
+    const commentButton = document.createElement('button');
+    commentButton.id = 'commentBtn';
+    commentButton.innerHTML = '<i class="far fa-comment"></i>';
+    commentButton.onclick = function () {
+      openCommentModal(item._id);
+    };
+
+    // Add elements to the article
+    
+    newRecipePost.appendChild(contentElement);
+    newRecipePost.appendChild(likeButton);
+    newRecipePost.appendChild(commentButton);
+
+    // Add the article to the feed
+    document.getElementById('recipe-feed').appendChild(newRecipePost);
+  });
+}
+
+
+
+function incrementLike(recipeId) {
+  const username = localStorage.getItem("username");
+
+  fetch(`/recipe/like/${recipeId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ username: username }),
+  })
+  .then(response => {
+    if (!response.ok) {
+      if (response.status === 400) {
+        alert('You have already liked this recipe.');
+      }
+      throw new Error('Failed to increment like');
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log(data.message);
+    updateLikeCount(recipeId);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+}
+
+function updateLikeCount(recipeId) {
+  fetch(`/recipe/likes/${recipeId}`)
+    .then(response => response.json())
+    .then(data => {
+      const likeCountElement = document.querySelector(`#likeCount-${recipeId}`);
+      if (likeCountElement) {
+        likeCountElement.textContent = data.likes;
+      }
+    })
+    .catch(error => {
+      console.error('Error updating like count:', error);
+    });
+}
+
+
+// Comment tab
+function openCommentModal(recipeId) {
+  const commentModal = document.getElementById('commentModal');
+  commentModal.style.display = 'flex';
+  commentModal.setAttribute('data-recipe-id', recipeId);
+
+  showComments(recipeId); // Load comments for this recipe
+}
+
+function closeCommentModal() {
+  document.getElementById('commentModal').style.display = 'none';
+}
+
+function applyFilter() {
+  const mealButtons = document.getElementsByName('meal');
+  let selectedMeal = '';
+  mealButtons.forEach(button => {
+    if (button.checked) {
+      selectedMeal = button.value;
+    }
+  });
+
+  if (selectedMeal !== "Default") {
+    let url = '/recipes/category/' + selectedMeal;
+    fetch(url)
+      .then((response) => {
+        return response.json();
+      })
+      .then((objects) => {
+        populateRecipes(objects);
+      })
+      .catch((error) => {
+        console.log(error);
+    });
+  } else {
+    const sortButtons = document.getElementsByName('sort');
+    let selectedSort = '';
+    sortButtons.forEach(button => {
+      if (button.checked) {
+        selectedSort = button.value;
+      }
+    });
+
+    if (selectedSort === "Most Likes") {
+      fetch('/recipes/most-liked')
+        .then((response) => {
+          return response.json();
+        })
+        .then((objects) => {
+          populateRecipes(objects);
+        })
+        .catch((error) => {
+          console.log(error);
+      });
+    } else if (selectedSort === "User Liked") {
+      let username = localStorage.getItem("username");
+      let url = '/recipes/liked-by/' + username;
+
+      fetch(url)
+        .then((response) => {
+          return response.json();
+        })
+        .then((objects) => {
+          populateRecipes(objects);
+        })
+        .catch((error) => {
+          console.log(error);
+      });
+    } else if (selectedSort === "Default") {
+      fetch("/get/recipes/")
+      .then((response) => {
+        return response.json();
+      })
+      .then((objects) => {
+        populateRecipes(objects);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    }
+  }
+
+  // Filtering with server side code
+}
+
+function showUserPost() {
+  let username = localStorage.getItem("username");  // When logged in, username should be stored in local storage
+  let url = "/get/recipe/" + username;
+
+  fetch(url)
+    .then((response) => {
+      return response.json();
+    })
+    .then((objects) => {
+      populateRecipes(objects);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+function showRecipes() {
+  fetch("/get/recipes/")
+    .then((response) => {
+      return response.json();
+    })
+    .then((objects) => {
+      populateRecipes(objects);
+    })
+    .catch((error) => {
+      console.log(error);
+  });
+}
+
+showRecipes();
+
 document.addEventListener('DOMContentLoaded', function() {
     const profileForm = document.getElementById('profileForm');
     if (profileForm) {
@@ -164,19 +489,25 @@ document.addEventListener('DOMContentLoaded', function() {
         return response.json();
     })
     .then(data => {
-        const profileImage = document.getElementById('profileImage');
+        const profileImageElement = document.getElementById('profileImage');
         const userName = document.getElementById('userName');
         const userBio = document.getElementById('userBio');
         const firstNameInput = document.getElementById('firstName');
         const lastNameInput = document.getElementById('lastName');
         const bioInput = document.getElementById('bio');
 
-        // Update profile image, name, and bio display
-        if (data.profileImage) {
-            profileImage.src = data.profileImage;
+        // Update profile image
+        if (data.profileImage && data.profileImage.data) {
+          let buffer = new Uint8Array(data.profileImage.data);
+          let base64String = buffer.reduce((data, byte) => {
+              return data + String.fromCharCode(byte);
+          }, '');
+          base64String = btoa(base64String); // Encode to Base64
+          profileImageElement.src = `data:image/png;base64,${base64String}`;
         } else {
-            profileImage.src = '/default_profile.png';
+            profileImageElement.src = '/default_profile.png';
         }
+
         if (userName) {
             userName.textContent = `${data.firstName} ${data.lastName}`;
         }
@@ -201,37 +532,37 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    const recipeForm = document.getElementsByClassName('recipeForm')[0];
-    if (recipeForm) {
+  const recipeForm = document.getElementsByClassName('recipeForm')[0];
+  if (recipeForm) {
       recipeForm.addEventListener('submit', function(event) {
-        event.preventDefault();
-  
-        const formData = new FormData(recipeForm);
-  
-        fetch('/add/recipe', {
-          method: 'POST',
-          body: formData,
-          credentials: 'include'
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          if (data.success) {
-            alert('Recipe posted successfully!');
-            window.location.href = '/home.html';
-          } else {
-            alert('Failed to post recipe: ' + data.message);
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('An error occurred while posting the recipe.');
-        });
+          event.preventDefault();
+
+          const formData = new FormData(recipeForm);
+
+          fetch('/add/recipe', {
+              method: 'POST',
+              body: formData,
+              credentials: 'include'
+          })
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              return response.json();
+          })
+          .then(data => {
+              if (data.success) {
+                  alert('Recipe posted successfully!');
+                  window.location.href = '/home.html';
+              } else {
+                  alert('Failed to post recipe: ' + data.message);
+              }
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              alert('An error occurred while posting the recipe.');
+          });
       });
-    }
+  }
   });
   

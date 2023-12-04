@@ -6,3 +6,6 @@ package-lock.json
 
 # Package configuration
 package.json
+
+# Ignore Mac .ds_store
+.DS_Store
