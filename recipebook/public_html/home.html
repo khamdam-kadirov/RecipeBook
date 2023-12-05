@@ -30,25 +30,43 @@
         </div>
         <br>
         <form id="filterForm">
-            <label id="mealType">
-                <h4>Category</h4>
-                <br>
+            <h4>Category</h4><br>
+            <label>
                 <input type="radio" name="meal" value="Default" class="mealBtn" checked> Default<br>
+            </label>
+            <label>
                 <input type="radio" name="meal" value="Soup" class="mealBtn"> Soup<br>
+            </label>
+            <label>
                 <input type="radio" name="meal" value="Pan-fried" class="mealBtn"> Pan-Fried<br>
+            </label>
+            <label>
                 <input type="radio" name="meal" value="Steamed" class="mealBtn"> Steamed<br>
+            </label>
+            <label>
                 <input type="radio" name="meal" value="MainDish" class="mealBtn"> Main Dish<br>
+            </label>
+            <label>
                 <input type="radio" name="meal" value="Dessert" class="mealBtn"> Dessert<br>
+            </label>
+            <label>
                 <input type="radio" name="meal" value="Vegan" class="mealBtn"> Vegan<br>
+            </label>
+            <label>
                 <input type="radio" name="meal" value="Grilled" class="mealBtn"> Grilled<br>
+            </label>
+            <label>
                 <input type="radio" name="meal" value="Other" class="mealBtn"> Other<br>
             </label>
             <br>
-            <label id="sortBy">
-                <h4>Sort By</h4>
-                <br>
+            <h4>Sort By</h4><br>
+            <label>
                 <input type="radio" name="sort" value="Default" class="sortBtn" checked> Default<br>
+            </label>
+            <label>
                 <input type="radio" name="sort" value="Most Likes" class="sortBtn"> High Likes<br>
+            </label>
+            <label>
                 <input type="radio" name="sort" value="User Liked" class="sortBtn"> User Liked<br>
             </label>
             <br>
@@ -57,38 +75,12 @@
 
     <main>
         <input type="text" id="searchInput" placeholder="Search for your meal!">
-        <button input="searchButton" onclick="searchRecipe()" id="searchBtn">
+        <button onclick="searchRecipe()" id="searchBtn">
             <i class="fas fa-search"></i>
         </button>
         <button class="create-listing-btn" onclick="createRecipe()">Add a Recipe</button>
-        <section id="recipe-feed">
-            <!-- <article class="recipe-post">
-                <img src="signin.jpg" alt="Delicious Pasta" class="recipe-image">
-                <div class="recipe-content">
-                    <h2>Pasta al Pomodoro</h2>
-                    <p>This classic tomato pasta is a simple yet delicious dish that's perfect for weeknight dinners.</p>
-                </div>
-                <button id="heartBtn" onclick="incrementLike()">
-                    <i class="fas fa-heart"></i> 0
-                </button>
-                <button id="commentBtn" onclick="openCommentModal()">
-                    <i class="far fa-comment"></i>
-                </button>
-            </article>
-            <article class="recipe-post">
-                <img src="food-image2.jpg" alt="Fresh Salad" class="recipe-image">
-                <div class="recipe-content">
-                    <h2>Garden Fresh Salad</h2>
-                    <p>A refreshing mix of greens, veggies, and a light vinaigrette to keep you energized.</p>
-                </div>
-                <button id="heartBtn" onclick="incrementLike()">
-                    <i class="fas fa-heart"></i> 0
-                </button>
-                <button id="commentBtn" onclick="openCommentModal()">
-                    <i class="far fa-comment"></i>
-                </button>
-            </article> -->
-        </section>
+        <div id="recipe-feed">
+        </div>
     </main>
 
     <div id="commentModal" data-recipe-id="">
@@ -96,7 +88,6 @@
           <p>Comment Section</p>
           <div id="commentsContainer">
             <div class="comment">
-                <strong>useranme: </strong> This recipe is amazing!
             </div>
           </div>
           <form id="commentForm">
