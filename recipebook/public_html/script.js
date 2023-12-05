@@ -229,9 +229,11 @@ function searchRecipe() {
    * Parameters: None
    * Return: None
    */
+  // Get the keyword from the search bar
   let keyword = document.getElementById("searchInput").value;
   let url = "/search/recipe/" + keyword;
 
+  // Fetch the recipes that match the keyword
   fetch(url)
     .then((response) => {
       return response.json();
@@ -258,10 +260,12 @@ function populateRecipes(objects) {
   let recipeTab = document.getElementById("recipe-feed");
   recipeTab.innerHTML = "";  // Clear all existing contents
 
+  // Create a post for each recipe
   objects.forEach((item) => {
     const newRecipePost = document.createElement('article');
     newRecipePost.className = 'recipe-post';
 
+    // Create recipe image
     if (item.image && item.image.data) {
       let image = document.createElement("img");
       let buffer = new Uint8Array(item.image.data);
@@ -368,6 +372,7 @@ function updateLikeCount(recipeId) {
    * Parameters: recipeId - the ID of the recipe
    * Return: None
    */
+  // Get the updated like count from the server
   fetch(`/recipe/likes/${recipeId}`)
     .then(response => response.json())
     .then(data => {
@@ -417,12 +422,14 @@ function applyFilter() {
    */
   const mealButtons = document.getElementsByName('meal');
   let selectedMeal = '';
+  // Get the selected meal
   mealButtons.forEach(button => {
     if (button.checked) {
       selectedMeal = button.value;
     }
   });
 
+  // Filtering with client side code
   if (selectedMeal !== "Default") {
     let url = '/recipes/category/' + selectedMeal;
     fetch(url)
@@ -497,6 +504,7 @@ function showUserPost() {
   let username = localStorage.getItem("username");  // When logged in, username should be stored in local storage
   let url = "/get/recipe/" + username;
 
+  // Fetch the recipes posted by the user
   fetch(url)
     .then((response) => {
       return response.json();
@@ -510,6 +518,13 @@ function showUserPost() {
 }
 
 function showRecipes() {
+  /**
+   * Description: Fetches all recipes from the server
+   * and displays them in the recipe feed.
+   * 
+   * Parameters: None
+   * Return: None
+   */
   fetch("/get/recipes/")
     .then((response) => {
       return response.json();
@@ -534,9 +549,11 @@ document.addEventListener('DOMContentLoaded', function() {
      * Return: None
      */
     const profileForm = document.getElementById('profileForm');
+    // Handle form submission
     if (profileForm) {
         profileForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            // Send updated profile information to server
             const formData = new FormData(this);
             fetch('/update-profile', {
                 method: 'PUT',
@@ -561,8 +578,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Handle profile image upload
     const imageUpload = document.getElementById('imageUpload');
     if (imageUpload) {
+      // Display the selected image
         imageUpload.addEventListener('change', function(e) {
             const reader = new FileReader();
             reader.onload = function(event) {
@@ -593,6 +612,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return response.json();
     })
     .then(data => {
+      // Display the user's profile information
         const profileImageElement = document.getElementById('profileImage');
         const userName = document.getElementById('userName');
         const userBio = document.getElementById('userBio');
@@ -644,11 +664,13 @@ document.addEventListener('DOMContentLoaded', function() {
    * Parameters: None
    * Return: None
    */
+  // Handle form submission
   const recipeForm = document.getElementsByClassName('recipeForm')[0];
   if (recipeForm) {
       recipeForm.addEventListener('submit', function(event) {
           event.preventDefault();
-
+          
+          // Send recipe to server
           const formData = new FormData(recipeForm);
 
           fetch('/add/recipe', {
@@ -656,6 +678,7 @@ document.addEventListener('DOMContentLoaded', function() {
               body: formData,
               credentials: 'include'
           })
+          // Handle response from server
           .then(response => {
               if (!response.ok) {
                   throw new Error('Network response was not ok');
@@ -663,6 +686,7 @@ document.addEventListener('DOMContentLoaded', function() {
               return response.json();
           })
           .then(data => {
+            // Check if the recipe was added successfully
               if (data.success) {
                   alert('Recipe posted successfully!');
                   window.location.href = '/home.html';
@@ -670,6 +694,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   alert('Failed to post recipe: ' + data.message);
               }
           })
+          // Handle errors
           .catch(error => {
               console.error('Error:', error);
               alert('An error occurred while posting the recipe.');
