@@ -307,3 +307,8 @@ body::before {
   font-size: 14px;
   color: #ccc;
 }
+
+#landingImg {
+  width: 70%;
+  height: 750px;
+}

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Post a Recipe</title>
-    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
     <div class="post-container">
@@ -22,7 +22,7 @@
               placeholder="Recipe Title"
               class="post-input"
               required
-            />
+            >
             <select id="category" name="category" class="post-input" required>
               <option value="" disabled selected style="display: none">
                 Select Category
@@ -42,21 +42,21 @@
               id="time"
               placeholder="Time to Prepare (e.g., 30 mins)"
               class="post-input"
-            />
+            >
             <input
               type="number"
               name="calories"
               id="calories"
               placeholder="Approximate Calories"
               class="post-input"
-            />
+            >
             <input
               type="text"
               name="difficulty"
               id="difficulty"
               placeholder="Difficulty Level (e.g., Easy, Hard)"
               class="post-input"
-            />
+            >
             <textarea
               name="content"
               id="content"
@@ -71,7 +71,7 @@
             id="image"
             class="post-input"
             required
-            />
+            >
             <button type="submit" class="post-btn">Submit Recipe</button>
             <span id="submissionStatus"></span>
           </form>

@@ -10,10 +10,10 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recipe Book</title>
-    <link rel="stylesheet" href="./index.css" />
+    <link rel="stylesheet" href="./index.css">
   </head>
   <body>
     <div class="header-container">
@@ -26,12 +26,12 @@
           <a href="./signin.html">Explore Foods</a>
           <a href="#faq">FAQ</a>
         </nav>
-        <a href="./signin.html"><button class="button-free-trial">Try for Free</button></a>
+        <button class="button-free-trial" onclick="goSignIn()">Try for Free</button>
       </div>
       <div class="header-slogan">
         <p class="feast">Feast on Variety: Where Every Recipe Tells a Story</p>
         <p class="join">Join the Table, Share Your Dish, and Savor the Collective Creativity of Cooking.</p>
-        <a href="./signin.html"><button class="button-explore">Explore Recipes</button></a>
+        <button class="button-explore" onclick="goSignIn()">Explore Recipes</button>
       </div>
     </div>
 
@@ -70,7 +70,7 @@
           </div>
           <div class="discover-right">
             <div class="image-container">
-              <img src="./landing3.jpg" alt="Food Recipes" width="70%" height="750px">
+              <img src="./landing3.jpg" alt="Food Recipes" id="landingImg">
             </div>
           </div>
         </div>
@@ -117,5 +117,15 @@
           <p>&copy; 2023 Recipe Book. All Rights Reserved.</p>
         </div>
       </footer>
+
+      <script>
+        function goSignIn() {
+          window.location.href = "./signin.html"
+        }
+
+        function goSignUp() {
+
+        }
+      </script>
   </body>
 </html>
