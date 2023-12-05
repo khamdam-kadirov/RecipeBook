@@ -1,12 +1,33 @@
-/**
- * Author: Igor, John, Sherali, Khamdam
- * Date: 11/30/2023
- * Class: CSC 337
- * Instructor: Benjamin Dicken
- *
- * Description:
- */
+/*
+Authors: Sherali Ozodov, Khamdam Kadirov, Igor Gabriel Bezerra Bernardon, John Ko
+Date: 12/06/2023 
+Class: CSC 337
+File: server.js
+Description: 
+  Recipe Book Backend Server
 
+  This file contains the server-side code for the Recipe Book application.
+  It handles the following requests:
+  - POST /login: Authenticates a user and creates a session.
+  - POST /create-account: Creates a new user account.
+  - GET /get/users: Fetches all users from the database.
+  - GET /get/recipes: Fetches all recipes from the database.
+  - GET /get/recipe/:user: Fetches all recipes from a specific user.
+  - GET /search/recipe/:keyword: Searches for recipes by a keyword in their title.
+  - POST /add/recipe: Adds a new recipe.
+  - POST /logout: Logs out a user by deleting their session.
+  - PUT /update-profile: Updates a user's profile.
+  - GET /get-user-profile: Fetches a user's profile information.
+  - POST /recipe/comment/:recipeId: Adds a comment to a recipe.
+  - GET /recipe/comments/:recipeId: Fetches all comments for a recipe.
+  - POST /recipe/like/:recipeId: Likes a recipe.
+  - GET /recipe/likes/:recipeId: Fetches the number of likes for a recipe.
+  - GET /recipes/most-liked: Fetches recipes sorted by likes.
+  - GET /recipes/liked-by/:username: Fetches recipes liked by a specific user.
+  - GET /recipes/category/:category: Fetches recipes by category.
+*/
+
+// Import dependencies
 const mongoose = require("mongoose");
 const express = require("express");
 const path = require('path');
@@ -27,6 +48,7 @@ db.on("error", () => {
   console.log("MongoDB connection error:");
 });
 
+// Define the RecipeSchema
 const RecipeSchema = new Schema({
   title: {
     type: String,
@@ -126,7 +148,7 @@ var CommentSchema = new Schema({
 
 var Comment = mongoose.model('Comment', CommentSchema);
 
-
+// Middleware for parsing cookies and request body
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -207,13 +229,13 @@ function authenticate(req, res, next) {
 //for certain paths
 app.use((req, res, next) => {
   // Check if request is for 'home.html'
-  if (req.path === '/home.html') {
+  if (req.path === "/home.html") {
     // Authenticate before serving these files
     authenticate(req, res, next);
   } else {
     next();
   }
-}, express.static('public_html'));
+}, express.static(path.join(__dirname, "public_html")));
 
 
 // POST route for handling the login process
@@ -237,6 +259,7 @@ app.post('/login', (req, res) => {
         }
       });
     })
+    // Catch any errors that might occur
     .catch(err => {
       res.status(500).json({ success: false, message: 'An error occurred during login.' });
     });
@@ -270,7 +293,7 @@ app.post('/create-account', (req, res) => {
           firstName, 
           lastName 
       });
-
+        // Save the new user
         newUser.save()
           .then(() => {
             res.status(201).json({ success: true, message: 'Account created successfully.' });
@@ -356,6 +379,7 @@ app.post('/add/recipe', authenticate, upload.single('image'), (req, res) => {
         return res.status(404).json({ success: false, message: 'User not found.' });
       }
 
+      // Create a new recipe
       const newRecipe = new Recipe({
         title,
         category,
@@ -368,6 +392,7 @@ app.post('/add/recipe', authenticate, upload.single('image'), (req, res) => {
         username: username
       });
 
+      // Save the recipe and update the user's recipes array
       newRecipe.save()
         .then(savedRecipe => {
           user.recipes.push(savedRecipe._id);
@@ -388,6 +413,7 @@ app.post('/add/recipe', authenticate, upload.single('image'), (req, res) => {
 
 // Logout endpoint in server.js
 app.post('/logout', (req, res) => {
+  // Retrieve the session ID from the cookie
   let sessionCookie = req.cookies['session_id'];
 
   if (sessionCookie && sessions[sessionCookie]) {
@@ -406,12 +432,14 @@ app.put('/update-profile', authenticate, upload.single('profileImage'), (req, re
   const { username } = req.session;
   let updateData = { ...req.body };
 
+  // If the user uploaded a new profile image, save the buffer
   const imageBuffer = req.file.buffer;
 
   if (req.file) {
       updateData.profileImage = imageBuffer;
   }
 
+  // Update the user's profile
   User.findOneAndUpdate({ username }, updateData, { new: true })
       .then(updatedUser => {
           if (!updatedUser) {
@@ -432,6 +460,7 @@ app.get('/get-user-profile', authenticate, (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found.' });
         }
+        // Send only the required fields
         res.json({
           firstName: user.firstName,
           lastName: user.lastName,
@@ -450,7 +479,7 @@ app.get('/get-user-profile', authenticate, (req, res) => {
 app.post('/recipe/comment/:recipeId', (req, res) => {
   const { username, text } = req.body;
   const recipeId = req.params.recipeId;
-
+  // Create a new comment
   const newComment = new Comment({
     recipe: recipeId, // Storing ObjectId of the recipe
     username: username,
@@ -504,7 +533,7 @@ app.get('/recipe/comments/:recipeId', (req, res) => {
 app.post('/recipe/like/:recipeId', async (req, res) => {
   try {
     const username = req.body.username;
-
+    
     const user = await User.findOne({ username: username });
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });

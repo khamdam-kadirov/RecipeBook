@@ -1,3 +1,15 @@
+<!-- 
+Author: Igor Gabriel Bezerra Bernardon, John Ko, Khamdam Kadirov, Sherali Ozodov
+Date: 12/06/2023 
+Class: CSC 337
+File: createpost.html
+
+Decpription: 
+  This markup file contains the create post page for the Recipe Book website where users can create a new post/recipe.
+  The page contains a form where users can enter the title, category, time to prepare, approximate calories, difficulty level,
+  recipe instructions, and an image of the recipe. The page also contains a button to submit the recipe.
+-->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -21,8 +33,7 @@
               id="title"
               placeholder="Recipe Title"
               class="post-input"
-              required
-            >
+              required>
             <select id="category" name="category" class="post-input" required>
               <option value="" disabled selected style="display: none">
                 Select Category
@@ -41,37 +52,33 @@
               name="time"
               id="time"
               placeholder="Time to Prepare (e.g., 30 mins)"
-              class="post-input"
-            >
+              class="post-input">
             <input
               type="number"
               name="calories"
               id="calories"
               placeholder="Approximate Calories"
-              class="post-input"
-            >
+              class="post-input">
             <input
               type="text"
               name="difficulty"
               id="difficulty"
               placeholder="Difficulty Level (e.g., Easy, Hard)"
-              class="post-input"
-            >
+              class="post-input">
             <textarea
               name="content"
               id="content"
               placeholder="Recipe Instructions"
               class="post-input"
               rows="6"
-              required
-            ></textarea>
+              required>
+            </textarea>
             <input
             type="file"
             name="image"
             id="image"
             class="post-input"
-            required
-            >
+            required>
             <button type="submit" class="post-btn">Submit Recipe</button>
             <span id="submissionStatus"></span>
           </form>

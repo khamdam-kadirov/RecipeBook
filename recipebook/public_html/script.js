@@ -1,15 +1,14 @@
 /*
- * Author: Igor, John, Sherali, Khamdam
- * Date: 12/06/2023
- * Class: CSC 337
- * Instructor: Benjamin Dicken
- *
- * Description: This script is responsible for setting up
- * the client side of the Recipe Sharing application.
- * Allowing the client to send requests to create users,
- * login etc.
- */
+Authors: Sherali Ozodov, Khamdam Kadirov, Igor Gabriel Bezerra Bernardon, John Ko
+Date: 12/06/2023 
+Class: CSC 337
+File: script.js
 
+Description: This script is responsible for setting up
+  the client side of the Recipe Sharing application.
+  Allowing the client to send requests to create users,
+  login and also to display the recipes and comments, etc.
+*/
 
 document.addEventListener('DOMContentLoaded', function() {
   const loginForm = document.getElementById('userForm');
@@ -27,12 +26,14 @@ document.addEventListener('DOMContentLoaded', function() {
           const username = document.getElementById('usernameLogin').value;
           const password = document.getElementById('passwordLogin').value;
 
+          // Send login request to server
           fetch('/login', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ username, password }),
               credentials: 'same-origin'
           })
+          // Handle response from server
           .then(response => response.json())
           .then(data => {
               if (data.success) {
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   alert('Login failed: ' + data.message);
               }
           })
+          // Handle errors
           .catch(error => {
               console.error('Error:', error);
           });
@@ -62,17 +64,20 @@ document.addEventListener('DOMContentLoaded', function() {
        */
       createAccountForm.addEventListener('submit', function(event) {
           event.preventDefault();
+          // Get form data
           const username = document.getElementById('usernameCreate').value;
           const password = document.getElementById('passwordCreate').value;
           const firstName = document.getElementById('firstNameCreate').value;
           const lastName = document.getElementById('lastNameCreate').value;
           const createAccountForm = document.getElementById('createForm');
 
+          // Send account creation request to server
           fetch('/create-account', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ username, password, firstName, lastName })
           })
+          // Handle response from server
           .then(response => response.json())
           .then(data => {
               if (data.success) {
@@ -82,6 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   alert('Account creation failed: ' + data.message);
               }
           })
+          // Handle errors
           .catch(error => {
               console.error('Error:', error);
           });
@@ -89,9 +95,11 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
+// Logout button
 const logoutButton = document.getElementById('logout');
 if (logoutButton) {
     logoutButton.addEventListener('click', function() {
+      // Send logout request to server
         fetch('/logout', {
             method: 'POST',
             credentials: 'same-origin'
@@ -105,6 +113,7 @@ if (logoutButton) {
                 alert('Logout failed: ' + data.message);
             }
         })
+        // Handle errors
         .catch(error => {
             console.error('Error:', error);
         });
@@ -114,11 +123,21 @@ if (logoutButton) {
 
 // Modify the event listener for comment form submission
 document.addEventListener('DOMContentLoaded', function() {
+  /**
+   * Description: Sets up an event listener for the comment form. On form submission,
+   * it sends the comment to the server to be added to the database. If successful,
+   * refreshes the comments tab, else displays an error message.
+   * 
+   * Parameters: None
+   * Return: None
+   */
   const form = document.getElementById('commentForm');
 
+  // Handle form submission
   form.onsubmit = function(e) {
     e.preventDefault();
 
+    // Get form data
     const commentModal = document.getElementById('commentModal');
     const recipeId = commentModal.getAttribute('data-recipe-id');
     const commentText = document.getElementById('commentText').value;
@@ -134,6 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
       text: commentText
     };
 
+    // Send comment to server
     fetch(`/recipe/comment/${recipeId}`, {
       method: 'POST',
       headers: {
@@ -141,6 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
       },
       body: JSON.stringify(data)
     })
+    // Handle response from server
     .then(response => {
       if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -162,9 +183,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 function displayComments(comments) {
+  /** 
+   * Description: Displays the comments in the comments tab.
+   * 
+   * Parameters: comments - an array of comment objects
+   * Return: None
+  */
   const commentsContainer = document.getElementById('commentsContainer');
   commentsContainer.innerHTML = '';  // Clear the tab for comments
 
+  // Display each comment
   comments.forEach(comment => {
       const commentElement = document.createElement('div');
       commentElement.className = 'comment';
@@ -174,7 +202,13 @@ function displayComments(comments) {
 }
 
 function showComments(recipeId) {
-
+  /**
+   * Description: Fetches the comments for the given recipe from the server
+   * and displays them in the comments tab.
+   * 
+   * Parameters: recipeId - the ID of the recipe
+   * Return: None
+   */
   fetch(`/recipe/comments/${recipeId}`)
       .then(response => response.json())
       .then(data => {
@@ -188,6 +222,13 @@ function showComments(recipeId) {
 
 
 function searchRecipe() {
+  /**
+   * Description: Fetches the recipes that match the search keyword from the server
+   * and displays them in the recipe feed.
+   * 
+   * Parameters: None
+   * Return: None
+   */
   let keyword = document.getElementById("searchInput").value;
   let url = "/search/recipe/" + keyword;
 
@@ -208,6 +249,12 @@ function searchRecipe() {
   or it will be implmented when the program started running.
 */
 function populateRecipes(objects) {
+  /**
+   * Description: Displays the given recipes in the recipe feed.
+   * 
+   * Parameters: objects - an array of recipe objects
+   * Return: None
+   */
   let recipeTab = document.getElementById("recipe-feed");
   recipeTab.innerHTML = "";  // Clear all existing contents
 
@@ -277,6 +324,14 @@ function populateRecipes(objects) {
 
 
 function incrementLike(recipeId) {
+  /**
+   * Description: Sends a request to the server to increment the like count
+   * for the given recipe. If successful, updates the like count displayed
+   * on the page.
+   * 
+   * Parameters: recipeId - the ID of the recipe
+   * Return: None
+   */
   const username = localStorage.getItem("username");
 
   fetch(`/recipe/like/${recipeId}`, {
@@ -305,6 +360,14 @@ function incrementLike(recipeId) {
 }
 
 function updateLikeCount(recipeId) {
+  /**
+   * Description: Sends a request to the server to get the updated like count
+   * for the given recipe. If successful, updates the like count displayed
+   * on the page.
+   * 
+   * Parameters: recipeId - the ID of the recipe
+   * Return: None
+   */
   fetch(`/recipe/likes/${recipeId}`)
     .then(response => response.json())
     .then(data => {
@@ -321,6 +384,12 @@ function updateLikeCount(recipeId) {
 
 // Comment tab
 function openCommentModal(recipeId) {
+  /**
+   * Description: Displays the comment modal and loads the comments for the given recipe.
+   * 
+   * Parameters: recipeId - the ID of the recipe
+   * Return: None
+   */
   const commentModal = document.getElementById('commentModal');
   commentModal.style.display = 'flex';
   commentModal.setAttribute('data-recipe-id', recipeId);
@@ -329,10 +398,23 @@ function openCommentModal(recipeId) {
 }
 
 function closeCommentModal() {
+  /**
+   * Description: Hides the comment modal.
+   * 
+   * Parameters: None
+   * Return: None
+   */
   document.getElementById('commentModal').style.display = 'none';
 }
 
 function applyFilter() {
+  /**
+   * Description: Fetches the recipes that match the filter from the server
+   * and displays them in the recipe feed.
+   * 
+   * Parameters: None
+   * Return: None
+   */
   const mealButtons = document.getElementsByName('meal');
   let selectedMeal = '';
   mealButtons.forEach(button => {
@@ -405,6 +487,13 @@ function applyFilter() {
 }
 
 function showUserPost() {
+  /**
+   * Description: Fetches the recipes posted by the current user from the server
+   * and displays them in the recipe feed.
+   * 
+   * Parameters: None
+   * Return: None
+   */
   let username = localStorage.getItem("username");  // When logged in, username should be stored in local storage
   let url = "/get/recipe/" + username;
 
@@ -436,6 +525,14 @@ function showRecipes() {
 showRecipes();
 
 document.addEventListener('DOMContentLoaded', function() {
+    /**
+     * Description: Sets up an event listener for the profile form. On form submission,
+     * it sends the updated profile information to the server. If successful,
+     * redirects to the profile page, else displays an error message.
+     * 
+     * Parameters: None
+     * Return: None
+     */
     const profileForm = document.getElementById('profileForm');
     if (profileForm) {
         profileForm.addEventListener('submit', function(e) {
@@ -477,6 +574,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+    /**
+     * Description: Fetches the user's profile information from the server
+     * and displays it on the profile page.
+     * 
+     * Parameters: None
+     * Return: None
+     */
     // Fetch user profile data
     fetch('/get-user-profile', {
         method: 'GET',
@@ -532,6 +636,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+  /**
+   * Description: Sets up an event listener for the recipe form. On form submission,
+   * it sends the recipe to the server to be added to the database. If successful,
+   * redirects to the home page, else displays an error message.
+   * 
+   * Parameters: None
+   * Return: None
+   */
   const recipeForm = document.getElementsByClassName('recipeForm')[0];
   if (recipeForm) {
       recipeForm.addEventListener('submit', function(event) {
