@@ -229,13 +229,13 @@ function authenticate(req, res, next) {
 //for certain paths
 app.use((req, res, next) => {
   // Check if request is for 'home.html'
-  if (req.path === "/home.html") {
+  if (req.path === '/home.html') {
     // Authenticate before serving these files
     authenticate(req, res, next);
   } else {
     next();
   }
-}, express.static(path.join(__dirname, "public_html")));
+}, express.static('public_html'));
 
 
 // POST route for handling the login process
@@ -259,7 +259,6 @@ app.post('/login', (req, res) => {
         }
       });
     })
-    // Catch any errors that might occur
     .catch(err => {
       res.status(500).json({ success: false, message: 'An error occurred during login.' });
     });
@@ -293,7 +292,7 @@ app.post('/create-account', (req, res) => {
           firstName, 
           lastName 
       });
-        // Save the new user
+        // Save the new user      
         newUser.save()
           .then(() => {
             res.status(201).json({ success: true, message: 'Account created successfully.' });
@@ -303,6 +302,7 @@ app.post('/create-account', (req, res) => {
           });
       });
     })
+    // Catch any errors that might occur
     .catch(err => {
       res.status(500).json({ success: false, message: 'Error checking for existing user.' });
     });
@@ -381,7 +381,6 @@ app.post('/add/recipe', authenticate, upload.single('image'), (req, res) => {
       if (!user) {
         return res.status(404).json({ success: false, message: 'User not found.' });
       }
-
       // Create a new recipe
       const newRecipe = new Recipe({
         title,
@@ -416,7 +415,6 @@ app.post('/add/recipe', authenticate, upload.single('image'), (req, res) => {
 
 // Logout endpoint in server.js
 app.post('/logout', (req, res) => {
-  // Retrieve the session ID from the cookie
   let sessionCookie = req.cookies['session_id'];
 
   if (sessionCookie && sessions[sessionCookie]) {
@@ -440,7 +438,6 @@ app.put('/update-profile', authenticate, upload.single('profileImage'), (req, re
       const imageBuffer = req.file.buffer;
       updateData.profileImage = imageBuffer;
   }
-
   // Update the user's profile
   User.findOneAndUpdate({ username }, updateData, { new: true })
       .then(updatedUser => {
@@ -477,12 +474,11 @@ app.get('/get-user-profile', authenticate, (req, res) => {
 });
 
 
-
 // API endpoint to add a comment
 app.post('/recipe/comment/:recipeId', (req, res) => {
   const { username, text } = req.body;
   const recipeId = req.params.recipeId;
-  // Create a new comment
+
   const newComment = new Comment({
     recipe: recipeId, // Storing ObjectId of the recipe
     username: username,
@@ -515,11 +511,9 @@ app.get('/recipe/comments/:recipeId', (req, res) => {
           if (!recipe) {
               return res.status(404).json({ message: 'Recipe not found.' });
           }
-
-          // Optionally, you can further populate fields in each comment, 
-          // e.g., the user who made the comment, if needed
+          
           Comment.find({ '_id': { $in: recipe.comments }})
-              .populate('username') // Replace 'username' with the correct field if different
+              .populate('username')
               .then(comments => {
                   res.json(comments);
               })
@@ -536,7 +530,7 @@ app.get('/recipe/comments/:recipeId', (req, res) => {
 app.post('/recipe/like/:recipeId', async (req, res) => {
   try {
     const username = req.body.username;
-    
+
     const user = await User.findOne({ username: username });
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
@@ -580,6 +574,7 @@ app.get('/recipe/likes/:recipeId', (req, res) => {
 app.get('/recipes/most-liked', (req, res) => {
   Recipe.find({})
     .sort({ likes: -1 }) // Sort by likes in descending order
+    .populate('posted_by', 'username profileImage')
     .then(recipes => res.json(recipes))
     .catch(err => res.status(500).json({ message: 'Error fetching recipes.' }));
 });
@@ -595,6 +590,7 @@ app.get('/recipes/liked-by/:username', (req, res) => {
 
       // Fetch recipes liked by the user's ID
       return Recipe.find({ likedBy: user._id })
+        .populate('posted_by', 'username profileImage')
         .then(recipes => res.json(recipes))
         .catch(err => res.status(500).json({ message: 'Error fetching recipes.' }));
     })
@@ -605,6 +601,7 @@ app.get('/recipes/liked-by/:username', (req, res) => {
 // GET route to fetch recipes by category
 app.get('/recipes/category/:category', (req, res) => {
   Recipe.find({ category: req.params.category })
+    .populate('posted_by', 'username profileImage')
     .then(recipes => res.json(recipes))
     .catch(err => res.status(500).json({ message: 'Error fetching recipes.' }));
 });
