@@ -10,15 +10,14 @@
 <body>
     <header>
         <nav class="navbar">
-            <div class="nav-logo">Foodie</div>
+            <div class="nav-logo"></div>
             <ul class="nav-links">
                 <li><a href="index.html">Home</a></li>
-                <li><a href="profile.html">My Profile</a></li>
+                <li><a href="myprofile.html">My Profile</a></li>
                 <li><a href="createpost.html">Add Recipe</a></li>
             </ul>
             <div class="user-container">
                 <button onclick="logOut()" class="userContent" id="logout">Log Out</button>
-                <button onclick="showUserPost()" class="userContent">Show My Recipes</button>
             </div>
         </nav>
     </header>
@@ -30,44 +29,26 @@
         </div>
         <br>
         <form id="filterForm">
-            <h4>Category</h4><br>
-            <label>
-                <input type="radio" name="meal" value="Default" class="mealBtn" checked> Default<br>
-            </label>
-            <label>
-                <input type="radio" name="meal" value="Soup" class="mealBtn"> Soup<br>
-            </label>
-            <label>
-                <input type="radio" name="meal" value="Pan-fried" class="mealBtn"> Pan-Fried<br>
-            </label>
-            <label>
-                <input type="radio" name="meal" value="Steamed" class="mealBtn"> Steamed<br>
-            </label>
-            <label>
-                <input type="radio" name="meal" value="MainDish" class="mealBtn"> Main Dish<br>
-            </label>
-            <label>
-                <input type="radio" name="meal" value="Dessert" class="mealBtn"> Dessert<br>
-            </label>
-            <label>
-                <input type="radio" name="meal" value="Vegan" class="mealBtn"> Vegan<br>
-            </label>
-            <label>
-                <input type="radio" name="meal" value="Grilled" class="mealBtn"> Grilled<br>
-            </label>
-            <label>
-                <input type="radio" name="meal" value="Other" class="mealBtn"> Other<br>
+            <label id="mealType">
+                <h4>Category</h4>
+                <br>
+                <label><input type="radio" name="meal" value="Default" class="mealBtn" checked> Default</label><br>
+                <label><input type="radio" name="meal" value="Soup" class="mealBtn"> Soup</label><br>
+                <label><input type="radio" name="meal" value="Pan-fried" class="mealBtn"> Pan-Fried</label><br>
+                <label><input type="radio" name="meal" value="Steamed" class="mealBtn"> Steamed</label><br>
+                <label><input type="radio" name="meal" value="MainDish" class="mealBtn"> Main Dish</label><br>
+                <label><input type="radio" name="meal" value="Dessert" class="mealBtn"> Dessert</label><br>
+                <label><input type="radio" name="meal" value="Vegan" class="mealBtn"> Vegan</label><br>
+                <label><input type="radio" name="meal" value="Grilled" class="mealBtn"> Grilled</label><br>
+                <label><input type="radio" name="meal" value="Other" class="mealBtn"> Other</label><br>
             </label>
             <br>
-            <h4>Sort By</h4><br>
-            <label>
-                <input type="radio" name="sort" value="Default" class="sortBtn" checked> Default<br>
-            </label>
-            <label>
-                <input type="radio" name="sort" value="Most Likes" class="sortBtn"> High Likes<br>
-            </label>
-            <label>
-                <input type="radio" name="sort" value="User Liked" class="sortBtn"> User Liked<br>
+            <label id="sortBy">
+                <h4>Sort By</h4>
+                <br>
+                <label><input type="radio" name="sort" value="Default" class="sortBtn" checked> Default</label><br>
+                <label><input type="radio" name="sort" value="Most Likes" class="sortBtn"> High Likes</label><br>
+                <label><input type="radio" name="sort" value="User Liked" class="sortBtn"> User Liked</label><br>
             </label>
             <br>
         </form>
@@ -78,9 +59,11 @@
         <button onclick="searchRecipe()" id="searchBtn">
             <i class="fas fa-search"></i>
         </button>
+        <button onclick="showUserPost()" class="userContent">My Recipes</button>
         <button class="create-listing-btn" onclick="createRecipe()">Add a Recipe</button>
-        <div id="recipe-feed">
-        </div>
+        <section id="recipe-feed">
+           
+        </section>
     </main>
 
     <div id="commentModal" data-recipe-id="">
@@ -97,10 +80,6 @@
           <button class="close-button" onclick="closeCommentModal()">Close</button>
         </div>
     </div>
-
-    <footer>
-        <p>&copy; 2023 Foodie. All rights reserved.</p>
-    </footer>
     <script src="script.js"></script>
     <script>
         function createRecipe() {
