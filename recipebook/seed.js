@@ -1,3 +1,12 @@
+/*
+Authors: Sherali Ozodov, Khamdam Kadirov, Igor Gabriel Bezerra Bernardon, John Ko
+Date: 12/06/2023 
+Class: CSC 337
+File: seed.js
+Description: 
+  Seeds the database with some users and recipes for testing purposes.
+*/
+
 // DO node seed.js to seed DB for testing purposes. Make sure server is not running before doing so.
 const mongoose = require('mongoose');
 const { User, Recipe } = require('./server'); // Adjust the path as needed

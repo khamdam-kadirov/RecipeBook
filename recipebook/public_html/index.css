@@ -1,4 +1,13 @@
 /* Reset some default styles */
+/*
+Authors: Sherali Ozodov, Khamdam Kadirov, Igor Gabriel Bezerra Bernardon, John Ko
+Date: 12/06/2023 
+Class: CSC 337
+File: script.js
+
+Description: The styling for the landing page (index.html) is stored here.
+*/
+
 body {
 	font-family: 'Roboto', sans-serif;
   margin: 0;
