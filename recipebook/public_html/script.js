@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
           event.preventDefault();
           const username = document.getElementById('usernameLogin').value;
           const password = document.getElementById('passwordLogin').value;
-
+          
           // Send login request to server
           fetch('/login', {
               method: 'POST',
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
               body: JSON.stringify({ username, password }),
               credentials: 'same-origin'
           })
-          // Handle response from server
+          
           .then(response => response.json())
           .then(data => {
               if (data.success) {
@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
                   alert('Login failed: ' + data.message);
               }
           })
-          // Handle errors
           .catch(error => {
               console.error('Error:', error);
           });
@@ -64,20 +63,19 @@ document.addEventListener('DOMContentLoaded', function() {
        */
       createAccountForm.addEventListener('submit', function(event) {
           event.preventDefault();
-          // Get form data
+           // Get form data
           const username = document.getElementById('usernameCreate').value;
           const password = document.getElementById('passwordCreate').value;
           const firstName = document.getElementById('firstNameCreate').value;
           const lastName = document.getElementById('lastNameCreate').value;
           const createAccountForm = document.getElementById('createForm');
-
           // Send account creation request to server
           fetch('/create-account', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ username, password, firstName, lastName })
           })
-          // Handle response from server
+           // Handle response from server
           .then(response => response.json())
           .then(data => {
               if (data.success) {
@@ -99,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
 const logoutButton = document.getElementById('logout');
 if (logoutButton) {
     logoutButton.addEventListener('click', function() {
-      // Send logout request to server
+        // Send logout request to server
         fetch('/logout', {
             method: 'POST',
             credentials: 'same-origin'
@@ -132,11 +130,9 @@ document.addEventListener('DOMContentLoaded', function() {
    * Return: None
    */
   const form = document.getElementById('commentForm');
-
-  // Handle form submission
+   // Handle form submission
   form.onsubmit = function(e) {
     e.preventDefault();
-
     // Get form data
     const commentModal = document.getElementById('commentModal');
     const recipeId = commentModal.getAttribute('data-recipe-id');
@@ -152,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
       username: username,
       text: commentText
     };
-
+    
     // Send comment to server
     fetch(`/recipe/comment/${recipeId}`, {
       method: 'POST',
@@ -169,9 +165,8 @@ document.addEventListener('DOMContentLoaded', function() {
       return response.json();
     })
     .then(data => {
-      console.log('Success:', data);
-      document.getElementById('commentText').value = ''; // Clear the form
-      showComments(recipeId); // Refresh the comments
+      document.getElementById('commentText').value = '';
+      showComments(recipeId);
       alert('Comment added successfully.');
     })
     .catch((error) => {
@@ -190,8 +185,7 @@ function displayComments(comments) {
    * Return: None
   */
   const commentsContainer = document.getElementById('commentsContainer');
-  commentsContainer.innerHTML = '';  // Clear the tab for comments
-
+  commentsContainer.innerHTML = '';
   // Display each comment
   comments.forEach(comment => {
       const commentElement = document.createElement('div');
@@ -221,29 +215,30 @@ function showComments(recipeId) {
 }
 
 
-function searchRecipe() {
-  /**
-   * Description: Fetches the recipes that match the search keyword from the server
-   * and displays them in the recipe feed.
-   * 
-   * Parameters: None
-   * Return: None
+function searchRecipe() {  
+   /** Description: Fetches the recipes that match the search keyword from the server
+    * and displays them in the recipe feed.
+    * 
+    * Parameters: None
+    * Return: None
    */
   // Get the keyword from the search bar
-  let keyword = document.getElementById("searchInput").value;
-  let url = "/search/recipe/" + keyword;
-
+  let keyword = document.getElementById("searchInput").value.trim();
+  let url = keyword ? "/search/recipe/" + keyword : "/get/recipes";
   // Fetch the recipes that match the keyword
   fetch(url)
     .then((response) => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
       return response.json();
     })
     .then((objects) => {
       populateRecipes(objects);
     })
     .catch((error) => {
-      console.log(error);
-  });
+      console.error('Error:', error);
+    });
 }
 
 /*
@@ -258,73 +253,92 @@ function populateRecipes(objects) {
    * Return: None
    */
   let recipeTab = document.getElementById("recipe-feed");
-  recipeTab.innerHTML = "";  // Clear all existing contents
-
+  if (recipeTab) {
+  recipeTab.innerHTML = "";
+}
   // Create a post for each recipe
   objects.forEach((item) => {
-    const newRecipePost = document.createElement('article');
-    newRecipePost.className = 'recipe-post';
+      const newRecipePost = document.createElement('article');
+      newRecipePost.className = 'recipe-post';
 
-    // Create recipe image
-    if (item.image && item.image.data) {
-      let image = document.createElement("img");
-      let buffer = new Uint8Array(item.image.data);
-      let base64String = buffer.reduce((data, byte) => {
-          return data + String.fromCharCode(byte);
-      }, '');
-      base64String = btoa(base64String); // Encode to Base64
-      image.src = `data:image/png;base64,${base64String}`;
-      image.alt = "Recipe Picture";
-      image.className = 'recipe-image';
-      newRecipePost.appendChild(image);
-  } else{
-    let image = document.createElement("img");
-    image.src = './default-recipe.jpg';
-    image.alt = "Recipe Picture";
-    image.className = 'recipe-image';
-    newRecipePost.appendChild(image);
-  }
-
-    // Create recipe contents
-    const contentElement = document.createElement('div');
-    contentElement.className = 'recipe-content';
-    contentElement.innerHTML = `
-      <h2>${item.title}</h2>
-      <p><strong>Category:</strong> ${item.category}</p>
-      <p><strong>Time:</strong> ${item.time || 'N/A'}</p>
-      <p><strong>Calories:</strong> ${item.calories || 'N/A'}</p>
-      <p><strong>Difficulty:</strong> ${item.difficulty || 'N/A'}</p>
-      <p><strong>Created by:</strong> ${item.username || 'N/A'}</p>
-      <p class = 'recipe-text'>${item.content}</p>
-    `;
-
-    // Like button
-    const likeButton = document.createElement('button');
-    likeButton.id = 'heartBtn';
-    likeButton.innerHTML = `<i class="fas fa-heart"></i> <span id="likeCount-${item._id}">${item.likes}</span>`;
-    likeButton.onclick = function () {
-      incrementLike(item._id);
-    };
-
-    // Comments button
-    const commentButton = document.createElement('button');
-    commentButton.id = 'commentBtn';
-    commentButton.innerHTML = '<i class="far fa-comment"></i>';
-    commentButton.onclick = function () {
-      openCommentModal(item._id);
-    };
-
-    // Add elements to the article
+      // Author Info
+      const authorInfo = document.createElement('div');
+      authorInfo.className = 'author-info';
     
-    newRecipePost.appendChild(contentElement);
-    newRecipePost.appendChild(likeButton);
-    newRecipePost.appendChild(commentButton);
+      const authorImage = document.createElement('img');
+      authorImage.className = 'author-image';
+      // Check if author's image is available and handle it
+      if (item.posted_by.profileImage && item.posted_by.profileImage.data) {
+          let buffer = new Uint8Array(item.posted_by.profileImage.data);
+          let base64String = buffer.reduce((data, byte) => {
+              return data + String.fromCharCode(byte);
+          }, '');
+          base64String = btoa(base64String);
+          authorImage.src = `data:image/png;base64,${base64String}`;
+      } else {
+          authorImage.src = '/default_profile.png';
+      }
+      authorImage.alt = `${item.posted_by.username}'s profile picture`;
 
-    // Add the article to the feed
-    document.getElementById('recipe-feed').appendChild(newRecipePost);
+      const authorName = document.createElement('div');
+      authorName.className = 'author-name';
+      authorName.innerText = item.posted_by.username
+
+      authorInfo.appendChild(authorImage);
+      authorInfo.appendChild(authorName);
+      newRecipePost.appendChild(authorInfo);
+
+      // Recipe Image
+      let image = document.createElement("img");
+      image.className = 'recipe-image';
+      if (item.image && item.image.data) {
+          let buffer = new Uint8Array(item.image.data);
+          let base64String = buffer.reduce((data, byte) => {
+              return data + String.fromCharCode(byte);
+          }, '');
+          base64String = btoa(base64String);
+          image.src = `data:image/png;base64,${base64String}`;
+      } else {
+          image.src = './default-recipe.jpg';
+      }
+      image.alt = "Recipe Picture";
+      newRecipePost.appendChild(image);
+
+      // Recipe Content
+      const contentElement = document.createElement('div');
+      contentElement.className = 'recipe-content';
+      contentElement.innerHTML = `
+          <h2>${item.title}</h2>
+          <p><strong>Category:</strong> ${item.category}</p>
+          <p><strong>Time:</strong> ${item.time || 'N/A'}</p>
+          <p><strong>Calories:</strong> ${item.calories || 'N/A'}</p>
+          <p><strong>Difficulty:</strong> ${item.difficulty || 'N/A'}</p>
+          <p class = 'recipe-text'>${item.content}</p>
+      `;
+      newRecipePost.appendChild(contentElement);
+
+      // Like and Comment Buttons
+      const likeButton = document.createElement('button');
+      likeButton.id = 'heartBtn';
+      likeButton.innerHTML = `<i class="fas fa-heart"></i> <span id="likeCount-${item._id}">${item.likes}</span>`;
+      likeButton.onclick = function () {
+          incrementLike(item._id);
+      };
+      // Comments button
+      const commentButton = document.createElement('button');
+      commentButton.id = 'commentBtn';
+      commentButton.innerHTML = '<i class="far fa-comment"></i>';
+      commentButton.onclick = function () {
+          openCommentModal(item._id);
+      };
+      // Add elements
+      newRecipePost.appendChild(likeButton);
+      newRecipePost.appendChild(commentButton);
+
+      // Append the new post to the feed
+      recipeTab.appendChild(newRecipePost);
   });
 }
-
 
 
 function incrementLike(recipeId) {
@@ -428,7 +442,6 @@ function applyFilter() {
       selectedMeal = button.value;
     }
   });
-
   // Filtering with client side code
   if (selectedMeal !== "Default") {
     let url = '/recipes/category/' + selectedMeal;
@@ -489,8 +502,6 @@ function applyFilter() {
       });
     }
   }
-
-  // Filtering with server side code
 }
 
 function showUserPost() {
@@ -501,9 +512,8 @@ function showUserPost() {
    * Parameters: None
    * Return: None
    */
-  let username = localStorage.getItem("username");  // When logged in, username should be stored in local storage
+  let username = localStorage.getItem("username");  
   let url = "/get/recipe/" + username;
-
   // Fetch the recipes posted by the user
   fetch(url)
     .then((response) => {
@@ -577,20 +587,22 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-
-    // Handle profile image upload
-    const imageUpload = document.getElementById('imageUpload');
-    if (imageUpload) {
-      // Display the selected image
-        imageUpload.addEventListener('change', function(e) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                document.getElementById('profileImage').src = event.target.result;
-            };
-            reader.readAsDataURL(e.target.files[0]);
-        });
-    }
+      // Handle profile image upload
+      const imageUpload = document.getElementById('imageUpload');
+      if (imageUpload) {
+          // Display the selected image
+          imageUpload.addEventListener('change', function(e) {
+              if (e.target.files && e.target.files[0]) {
+                  const reader = new FileReader();
+                  reader.onload = function(event) {
+                      document.getElementById('profileImage').src = event.target.result;
+                  };
+                  reader.readAsDataURL(e.target.files[0]);
+              }
+          });
+      }
 });
+
 
 document.addEventListener('DOMContentLoaded', function() {
     /**
@@ -612,8 +624,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return response.json();
     })
     .then(data => {
-      // Display the user's profile information
-        const profileImageElement = document.getElementById('profileImage');
+        // Display the user's profile information
+        const profileImageElement = document.getElementById('profileImage') || 'default_profile.png';
         const userName = document.getElementById('userName');
         const userBio = document.getElementById('userBio');
         const firstNameInput = document.getElementById('firstName');
@@ -669,7 +681,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (recipeForm) {
       recipeForm.addEventListener('submit', function(event) {
           event.preventDefault();
-          
           // Send recipe to server
           const formData = new FormData(recipeForm);
 
@@ -686,7 +697,7 @@ document.addEventListener('DOMContentLoaded', function() {
               return response.json();
           })
           .then(data => {
-            // Check if the recipe was added successfully
+             // Check if the recipe was added successfully
               if (data.success) {
                   alert('Recipe posted successfully!');
                   window.location.href = '/home.html';
@@ -702,4 +713,3 @@ document.addEventListener('DOMContentLoaded', function() {
       });
   }
   });
-  
