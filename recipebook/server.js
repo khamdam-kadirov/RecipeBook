@@ -39,7 +39,7 @@ const app = express();
 const port = 80;
 const saltRounds = 10;
 
-// DB setup
+
 const db = mongoose.connection;
 const mongoDBURL = "mongodb://127.0.0.1/recipes";
 mongoose.connect(mongoDBURL, { useNewUrlParser: true });
@@ -67,7 +67,7 @@ const RecipeSchema = new Schema({
     required: false,
   },
   time: {
-    type: String, // or Number, depending on how you want to store it
+    type: String,
     required: false,
   },
   calories: {
@@ -326,8 +326,9 @@ app.get("/get/users", (req, res) => {
 app.get("/get/recipes", (req, res) => {
   Recipe.find({})
     .sort({ createdAt: -1 }) // Sort by createdAt in descending order
+    .populate('posted_by', 'username profileImage')
     .then(recipes => {
-      // Respond with the list of recipes in JSON format.
+      // Respond with the list of recipes, including author details.
       res.json(recipes);
     })
     .catch(err => {
@@ -339,24 +340,26 @@ app.get("/get/recipes", (req, res) => {
 // GET route to fetch all recipes from a specific user.
 app.get("/get/recipe/:user", (req, res) => {
   User.findOne({ username: req.params.user })
-    .populate("recipes")
+    .populate({
+      path: "recipes",
+      populate: { path: "posted_by", select: "username profileImage" }
+    })
     .then(user => {
       if (!user) {
-        // If the user is not found, respond with an error.
         return res.status(404).json({ success: false, message: 'User not found.' });
       }
-      // Respond with the user's recipes.
       res.json(user.recipes);
     })
     .catch(err => {
-      // Handle any errors in fetching user recipes.
       res.status(500).json({ success: false, message: 'Failed to fetch user recipes.' });
     });
 });
 
+
 // GET route to search for recipes by a keyword in their title.
 app.get("/search/recipe/:keyword", (req, res) => {
   Recipe.find({ title: { $regex: req.params.keyword, $options: "i" } })
+    .populate('posted_by', 'username profileImage')
     .then(recipes => {
       // Respond with the matching recipes.
       res.json(recipes);
@@ -384,7 +387,7 @@ app.post('/add/recipe', authenticate, upload.single('image'), (req, res) => {
         title,
         category,
         content,
-        image: imageBuffer, // Save the buffer here
+        image: imageBuffer,
         time,
         calories,
         difficulty,
@@ -427,15 +430,14 @@ app.post('/logout', (req, res) => {
   }
 });
 
-// Endpoint for updating user profile
+
 app.put('/update-profile', authenticate, upload.single('profileImage'), (req, res) => {
   const { username } = req.session;
   let updateData = { ...req.body };
 
-  // If the user uploaded a new profile image, save the buffer
-  const imageBuffer = req.file.buffer;
-
+  // Only update the image if a new image was uploaded
   if (req.file) {
+      const imageBuffer = req.file.buffer;
       updateData.profileImage = imageBuffer;
   }
 
@@ -451,6 +453,7 @@ app.put('/update-profile', authenticate, upload.single('profileImage'), (req, re
           res.status(500).json({ success: false, message: 'Error updating profile.' });
       });
 });
+
 
 // Endpoint to get user profile information
 app.get('/get-user-profile', authenticate, (req, res) => {

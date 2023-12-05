@@ -29,7 +29,8 @@ nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2%;
+    padding: 1.8rem 2%;
+    padding-left: 230px;
 }
 
 nav ul {
@@ -39,6 +40,7 @@ nav ul {
 
 nav ul li {
     margin-right: 20px;
+    font-size: 18px;
 }
 
 nav ul li a {
@@ -47,14 +49,25 @@ nav ul li a {
     font-weight: bold;
 }
 
+.nav-links li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    transition: color 0.3s; 
+}
+
+.nav-links li a:hover {
+    color: #ff4757;
+}
+
 .create-listing-btn, #applyButton {
     padding: 10px 20px;
-    background-color: #ff4757;
+    background-color: #007bff;
     border: none;
     border-radius: 20px;
     color: white;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 15px;
 }
 
 .create-listing-btn {
@@ -63,7 +76,7 @@ nav ul li a {
 }
 
 .create-listing-btn:hover, #applyButton:hover {
-    background-color: #ff6b81;
+    background-color: #0056b3;
 }
 
 #applyButton {
@@ -102,20 +115,21 @@ nav ul li a {
 
 /* Main Content */
 main {
-    margin-left: 250px;
+    margin-left: 410px;
     padding: 20px;
 }
 
 #recipe-feed {
     display: flex;
     flex-direction: column;
+    width: 650px;
 }
 
 .recipe-content {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding-bottom: 20px;
+    padding-bottom: 30px;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     font-size: large;
 }
@@ -167,47 +181,59 @@ footer {
 #recipe-feed {
     display: flex;
     flex-direction: column;
-    overflow-y: auto; /* Make the feed scrollable */
-    /* height: calc(100vh - 60px); */
+    overflow-y: auto;
     padding-top: 1rem;
     margin-bottom: 30px;
 }
 
+/* Instagram-like Post Style */
 .recipe-post {
-    position: relative;
-    width: 80%;
-    height: 500px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+/* Author Info */
+.author-info {
     display: flex;
     align-items: center;
-    background: #fff;
-    margin-bottom: 1rem;
-    padding: 1rem;
-    padding-bottom: 100px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    border-bottom: 1px solid #f0f0f0;
 }
 
+.author-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+}
+
+.author-name {
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Recipe Image */
 .recipe-image {
-    width: 120px;
-    height: 120px;
-    object-fit: cover; /* Maintain aspect ratio */
-    margin-right: 1rem;
-    border-radius: 10px;
+    width: 650px;
+    height: 450px;
+    display: block;
+    object-fit: cover;
 }
 
-/* Responsive Design for Feed */
+/* Recipe Content */
+.recipe-content {
+    padding: 10px;
+}
+
+/* Adjustments for Responsive Design */
 @media (max-width: 768px) {
-    .recipe-feed {
-        height: auto;
-    }
-
     .recipe-post {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .recipe-image {
-        margin-bottom: 1rem;
+        width: 90%;
+        margin: 10px auto;
     }
 }
 
@@ -227,18 +253,45 @@ footer {
 
 #headerF {
     color: white;
-    padding-top: 10px;
+    padding-top: 25px;
 }
 
-/* Search part */
+/* Search Bar Styles */
 #searchInput {
-    height: 30px;
+    margin-left: 150px;
+    height: 40px;
     width: 30%;
+    padding: 5px 13px; 
+    border: 1px solid #ddd; 
+    border-radius: 15px 0 0 15px; 
+    outline: none; 
+    transition: border-color 0.3s;
+    margin-top: 15px;
+    margin-bottom: 12px;
+}
+
+#searchInput:focus {
+    border-color: #007bff;
 }
 
 #searchBtn {
-    height: 30px;
-    width: 30px;
+    height: 40px;
+    width: 45px;
+    border: 1px solid #ddd;
+    background-color: #007bff; 
+    color: white;
+    border-radius: 0 15px 15px 0; 
+    cursor: pointer; 
+    outline: none; 
+    transition: background-color 0.3s; 
+}
+
+#searchBtn:hover {
+    background-color: #0056b3;
+}
+
+#searchBtn i {
+    vertical-align: middle;
 }
 
 /* Log out button */
@@ -250,11 +303,26 @@ footer {
 
 .userContent {
     padding: 10px;
+    margin-left: 22px;
+    padding-left: 16px;
+    padding-right: 16px;
     border: none;
     border-radius: 20px;
     background-color: #007bff;
     color: #fff;
     cursor: pointer;
+    font-size: 15px;
+}
+
+
+#logout {
+    padding-left: 22px;
+    padding-right: 22px;
+    background-color: rgb(255, 48, 48);
+}
+
+#logout:hover {
+    background-color: rgb(254, 88, 88);
 }
 
 .userContent:hover {
@@ -266,7 +334,7 @@ footer {
     display: none;
     position: fixed;
     top: 0;
-    left: 0;
+    right: 37px;
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
@@ -279,7 +347,7 @@ footer {
     padding: 20px;
     border-radius: 5px;
     text-align: center;
-    width: 30%; /* 수정된 부분: 전체 폭의 50%로 조절 */
+    width: 30%;
     height: 70%;
     display: flex;
     flex-direction: column;
@@ -296,28 +364,28 @@ footer {
 
 #commentForm {
     display: flex;
-    flex-direction: row; /* 수정된 부분: 요소들을 가로로 나열하도록 설정 */
-    align-items: center; /* 수정된 부분: 세로 중앙 정렬 */
+    flex-direction: row; 
+    align-items: center;
     margin-top: 10px;
 }
 
 #commentText {
-    flex-grow: 1; /* 수정된 부분: 나머지 공간을 모두 차지하도록 설정 */
-    padding: 5px; /* 수정된 부분: 여백 추가 */
-    margin-right: 10px; /* 수정된 부분: 오른쪽 여백 추가 */
+    flex-grow: 1;
+    padding: 5px;
+    margin-right: 10px; 
 }
 
 #submitBtn {
     padding: 10px;
-    background-color: #007bff; /* Submit 버튼 배경색 */
-    color: #fff; /* Submit 버튼 글자색 */
+    background-color: #007bff; 
+    color: #fff; 
     border: none;
     cursor: pointer;
-    border-radius: 5px; /* 둥근 모서리 적용 */
+    border-radius: 5px; 
 }
 
 #submitBtn:hover {
-    background-color: #0056b3; /* Hover 시 배경색 변경 */
+    background-color: #0056b3;
 }
 
 .close-button {
@@ -331,18 +399,18 @@ footer {
 
 #heartBtn,
 #commentBtn {
-    position: absolute; /* 추가: position: absolute로 설정 */
-    bottom: 10px; /* 추가: 하단 여백 조절 */
-    right: 10px; /* 추가: 좌측 여백 조절 */
+    position:relative; 
+    bottom: 10px;
+    left: 12px;
     background-color: white;
     border: white;
-    font-size: 30px;
+    font-size: 25px;
     cursor: pointer;
 }
 
 #heartBtn {
     color: red;
-    margin-right: 50px;
+    margin-right: 27px;
 }
 
 #commentBtn {
