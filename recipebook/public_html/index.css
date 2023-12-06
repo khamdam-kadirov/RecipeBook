@@ -267,6 +267,69 @@ body::before {
   border-radius: 20px; 
 }
 
+/* Styles for the Instructions */
+.instruction-section {
+  background-color: #f9f9f9;
+  padding: 60px 0;
+  border-top: 2px solid #e74c3c;
+  border-bottom: 2px solid #e74c3c;
+}
+
+.instruction-content {
+  align-items: center;
+}
+
+.instruction-top {
+  max-width: 70%;
+  padding-left: 250px;
+  padding-right: 250px;
+}
+
+.instruction-top h2 {
+  font-size: 30px;
+  color: #e74c3c;
+  padding-bottom: 10px;
+  text-align: center;
+}
+
+.instruction-top p {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 30px;
+}
+
+.instruction-top ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.instruction-top li {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.instruction-top li::before {
+  content: "✓ ";
+  color: #e74c3c;
+}
+
+.instruction-buttom {
+  text-align: center;
+}
+
+/* Style for the image container */
+.instruction-image-container {
+  border-radius: 20px;
+  height: 760px;
+  overflow: hidden;
+}
+
+.instruction-image-container img {
+  max-width: 110%;
+  border-radius: 20px; 
+}
+
 /* Footer styles */
 .footer {
   background-color: #222;
