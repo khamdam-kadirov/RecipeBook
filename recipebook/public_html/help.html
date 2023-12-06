@@ -1,0 +1,172 @@
+<!-- 
+Author: Igor Gabriel Bezerra Bernardon, John Ko, Khamdam Kadirov, Sherali Ozodov
+Date: 12/06/2023 
+Class: CSC 337
+File: help.html
+
+Description: 
+  This is the help page for the Recipe Book website. It explains how to use the application. 
+  It contains a header with a navigation bar, a slogan, and a button to sign up for a free trial. 
+  The page also contains a section which includes instructions for users.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Book</title>
+    <link rel="stylesheet" href="./index.css">
+  </head>
+  <body>
+    <div class="header-container">
+      <div class="header-content">
+        <div class="branding">
+          <h1>Recipe Book</h1>
+        </div>
+        <nav class="navigation">
+          <a href="./index.html">Home</a>
+          <a href="./signin.html">Explore Foods</a>
+          <a href="./help.html">Help</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+        <button class="button-free-trial" onclick="goSignIn()">Try for Free</button>
+      </div>
+      <div class="header-slogan">
+        <p class="feast">Feast on Variety: Where Every Recipe Tells a Story</p>
+        <p class="join">Join the Table, Share Your Dish, and Savor the Collective Creativity of Cooking.</p>
+        <button class="button-explore" onclick="goSignIn()">Explore Recipes</button>
+      </div>
+    </div>
+
+      <section class="instruction-section">
+        <div class="instruction-content">
+          <div class="instruction-top">
+            <h2>Getting Started: Sign Up and Log In</h2>
+            <p>
+              To begin your journey with our application, the first step is to sign up. This is a simple and 
+              straightforward process. You'll need to provide a few basic details:
+            </p>
+            <ul>
+              <li>Username: Choose a unique username that will identify you on our platform.</li>
+              <li>First Name and Last Name: Your real names, so we can personalize your experience.</li>
+              <li>Password: Create a secure password to protect your account.</li>
+            </ul>
+            <p>Once you've signed up, you can log in anytime using your username and password. Logging in is your
+              gateway to a world of features – view posts, create your own posts, and much more.
+              Remember, your username and password are key to accessing all the fantastic features 
+              we offer, so keep them safe and handy!</p>
+          </div>
+          <br>
+          <div class="instruction-buttom">
+            <div class="instruction-image-container">
+              <img src="./signup-instruction.png" alt="Food Recipes" id="landingImg">
+            </div>
+          </div>
+          <br>
+          <br>
+
+          <div class="instruction-top">
+            <h2>Navigating the Home Page</h2>
+            <p>
+              After a successful login, you will be directed to the home page, the heart of 
+              our application. Here's what you can do on the home page:
+            </p>
+            <ul>
+              <li>Browse Recipe Posts: Explore a wide range of recipe posts shared by our vibrant community. Each post is a window into a 
+                delicious culinary experience.</li>
+              <li>Search for Posts: Use the search bar at the top to find specific recipes.</li>
+              <li>Filter by Categories: Tailor your browsing experience by filtering recipes based on categories.</li>
+              <li>Sort by Likes: Discover the most popular recipes by sorting posts by the number of likes.</li>
+              <li>Add a New Recipe: Share your culinary expertise by adding a new recipe. Your contributions are
+                what make our community diverse and rich in flavors.</li>
+              <li>User Profile: Access your user profile to personalize your settings, view your posted recipes, and manage 
+                your account details.</li>
+              <li>Log Out: When you're done, easily log out of the app to keep your account secure.</li>
+            </ul>
+          </div>
+          <br>
+          <div class="instruction-buttom">
+            <div class="instruction-image-container">
+              <img src="./home-instruction.png" alt="Food Recipes" id="landingImg">
+            </div>
+          </div>
+          <br>
+          <br>
+
+          <div class="instruction-top">
+            <h2>Exploring the My Profile Page</h2>
+            <p>
+              Your personal profile is a space where you can express yourself and manage your personal information. 
+              To access your profile, simply click on the "My Profile" option from the home page. Here's what you can 
+              do on your profile page:
+            </p>
+            <ul>
+              <li>Edit Profile Image: Personalize your account by adding or changing your profile image.</li>
+              <li>Update First Name and Last Name: Keep your personal information up to date. 
+                You can edit your first and last names anytime to reflect any changes or preferences.</li>
+              <li>Craft a Short Bio: Share a bit about yourself with the community through a short bio. 
+                This can be a quick introduction, your culinary interests, or anything you'd like others to know about you.</li>
+            </ul>
+          </div>
+          <br>
+          <div class="instruction-buttom">
+            <div class="instruction-image-container">
+              <img src="./profile-instruction.png" alt="Food Recipes" id="landingImg">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="faqs" id="faq">
+        <h2 class="faq-title">Frequently Asked Questions</h2>
+        <div class="faq">
+          <h4>How can I find a specific recipe on your website?</h4>
+          <p>Our website offers a search feature to help you find recipes by name, ingredients, or cuisine. 
+            Simply use the search bar at the top of the page to get started.</p>
+        </div>
+        <div class="faq">
+          <h4>How do I use the application?</h4>
+          <p>To use our application, you should sign in with your account. Once signed in, you can browse, search, and view recipes. Detailed instructions and navigation options are available within the app.</p>
+        </div>
+        <div class="faq">
+          <h4>Can I submit my own recipes to your website?</h4>
+          <p>Absolutely! We encourage our users to share their favorite recipes with the community. You 
+            can submit your recipes by creating an account and using the "Submit Recipe" feature.</p>
+        </div>
+        <div class="faq">
+          <h4>Can I leave comments and likes on recipes?</h4>
+          <p>Yes, you can leave comments and likes under the posts. Your engagement is valuable as it helps others in the community to get insights and opinions about different recipes.</p>
+        </div>
+      </section>      
+
+      <footer class="footer">
+        <div class="footer-content">
+          <div class="footer-logo">
+            <h1>Recipe Book</h1>
+          </div>
+          <div class="footer-links">
+            <ul>
+              <li><a href="index.html">Home</a></li>
+              <li><a href="./signup.html">Explore Foods</a></li>
+              <li><a href="./help.html">Help</a></li>
+              <li><a href="#faq">FAQ</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2023 Recipe Book. All Rights Reserved.</p>
+        </div>
+      </footer>
+
+      <script>
+        function goSignIn() {
+          window.location.href = "./signin.html"
+        }
+
+        function goSignUp() {
+
+        }
+      </script>
+  </body>
+</html>
