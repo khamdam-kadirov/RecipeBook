@@ -1,4 +1,4 @@
-# CS337-Final-Project
+# RecipeBook
 
 To run this project locally, clone/download it to your machine,
 
